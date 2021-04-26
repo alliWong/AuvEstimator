@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab containers="1" tab_name="Map XY">
+   <Container>
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockArea name="...">
+      <plot mode="XYPlot" style="Lines">
+       <range right="1.667836" bottom="-0.081130" left="-0.283843" top="3.151182"/>
+       <limitY/>
+       <curve curve_y="/est/state/state/y" name="/est/state/state/[x;y]" color="#f14cc1" curve_x="/est/state/state/x"/>
+       <curve curve_y="/rexrov2/pose_gt/pose/position/y" name="/rexrov2/pose_gt/pose/position/[x;y]" color="#9467bd" curve_x="/rexrov2/pose_gt/pose/position/x"/>
+       <curve curve_y="/dr/pose/pose/position/y" name="/dr/pose/pose/position/[x;y]" color="#1f77b4" curve_x="/dr/pose/pose/position/x"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Map Position">
+   <Container>
+    <DockSplitter count="3" orientation="-" sizes="0.333333;0.333333;0.333333">
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="1.184022" left="-364.555312" top="17.961210"/>
+       <limitY/>
+       <curve name="/est/state/state/x" color="#17becf"/>
+       <curve name="/rexrov2/pose_gt/pose/position/x" color="#bcbd22"/>
+       <curve name="/dr/pose/pose/position/x" color="#1f77b4"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="2.751335" left="-364.555312" top="13.243907"/>
+       <limitY/>
+       <curve name="/est/state/state/y" color="#bcbd22"/>
+       <curve name="/rexrov2/pose_gt/pose/position/y" color="#1f77b4"/>
+       <curve name="/dr/pose/pose/position/y" color="#d62728"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="-23.708666" left="-364.555312" top="3.548856"/>
+       <limitY/>
+       <curve name="/est/state/state/z" color="#1f77b4"/>
+       <curve name="/rexrov2/pose_gt/pose/position/z" color="#d62728"/>
+       <curve name="/dr/pose/pose/position/z" color="#1ac938"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Rotation">
+   <Container>
+    <DockSplitter count="3" orientation="-" sizes="0.333333;0.333333;0.333333">
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="2.903713" bottom="-7.542882" left="0.000000" top="7.672107"/>
+       <limitY/>
+       <curve name="/est/state/state/roll" color="#d62728"/>
+       <curve name="/rexrov2/pose_gt/pose/orientation/roll_deg" color="#f14cc1"/>
+       <curve name="/dr/pose/pose/orientation/roll_deg" color="#1f77b4"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="2.903713" bottom="-4.984537" left="0.000000" top="7.688718"/>
+       <limitY/>
+       <curve name="/est/state/state/pitch" color="#1ac938"/>
+       <curve name="/rexrov2/pose_gt/pose/orientation/pitch_deg" color="#9467bd"/>
+       <curve name="/dr/pose/pose/orientation/pitch_deg" color="#d62728"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="2.903713" bottom="-2.845410" left="0.000000" top="116.300299"/>
+       <limitY/>
+       <curve name="/est/state/state/yaw" color="#ff7f0e"/>
+       <curve name="/rexrov2/pose_gt/pose/orientation/yaw_deg" color="#17becf"/>
+       <curve name="/dr/pose/pose/orientation/yaw_deg" color="#1ac938"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Velocity">
+   <Container>
+    <DockSplitter count="3" orientation="-" sizes="0.333333;0.333333;0.333333">
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="0.335387" left="-364.555312" top="0.339007"/>
+       <limitY/>
+       <curve name="/est/state/state/vx" color="#1ac938"/>
+       <curve name="/rexrov2/pose_gt/twist/linear/x" color="#9467bd"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="0.199813" left="-364.555312" top="0.211391"/>
+       <limitY/>
+       <curve name="/est/state/state/vy" color="#ff7f0e"/>
+       <curve name="/rexrov2/pose_gt/twist/linear/y" color="#17becf"/>
+      </plot>
+     </DockArea>
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="-317.106821" bottom="-0.062454" left="-364.555312" top="-0.042200"/>
+       <limitY/>
+       <curve name="/est/state/state/vz" color="#f14cc1"/>
+       <curve name="/rexrov2/pose_gt/twist/linear/z" color="#bcbd22"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="tab6">
+   <Container>
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range right="1.000000" bottom="0.000000" left="0.000000" top="1.000000"/>
+       <limitY/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="true"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="151"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="MQTT Subscriber"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="UDP Server"/>
+  <plugin ID="WebSocket Server"/>
+  <plugin ID="ZMQ Subscriber"/>
+  <plugin status="idle" ID="ROS /rosout Visualization"/>
+  <plugin status="idle" ID="ROS Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets>
+  <snippet name="1st_derivative">
+   <global>var prevX = 0
+var prevY = 0</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="1st_order_lowpass">
+   <global>var prevY = 0
+var alpha = 0.1</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="2D_velocity">
+   <global>var prev_x = 0
+var prev_y = 0
+var prev_t = 0</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="average_two_curves">
+   <global></global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="integral">
+   <global>var integral = 0</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="rad_to_deg">
+   <global></global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="remove_offset">
+   <global>var is_first = true
+var first_value = 0</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+  <snippet name="yaw_from_quaternion">
+   <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+   <function></function>
+   <linkedSource></linkedSource>
+  </snippet>
+ </snippets>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+

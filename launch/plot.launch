@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="bag_file_path" />
+  
+  <node name="rosbag_ros" pkg="auv_estimator" type="processBagFile.py" output="screen" required="true">
+    <param name="bag_file_path" value="/home/allison/Workspace/AuvWs/src/auv_estimator/Data/CurvedTrajectory.bag" />
+
+    <param name="gt_topic" value="/rexrov2/pose_gt" />
+    <param name="use_gt" value="true" />
+
+    <param name="plot_results" value="true" />
+  </node>
+
+</launch>

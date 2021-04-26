@@ -1,0 +1,30 @@
+<launch>
+  <param name="urdf_file" textfile="$(find auv_estimator)/urdf/robot.urdf" />
+  <arg name="bag_file_path" />
+  
+   <!-- GTSAM fusion combining IMU and 6DOF pose -->
+  <node name="processBagFile" pkg="auv_estimator" type="processRosBagFiles.py" output="screen" required="true">
+    <param name="bag_file_path" value="/home/allison/RosBags/CurvedTrajectory1.bag" />
+
+    <param name="gt_topic" value="/rexrov2/pose_gt" />
+    <param name="dr_topic" value="/dr/pose" />
+    <param name="ekf_topic" value="/est/state" />
+    <param name="depth_topic" value="/bar/depth" />
+    <param name="imu_topic" value="/rexrov2/imu" />
+
+    <param name="est_interval" value="0" />
+    <param name="use_gt" value="true" />
+    <param name="use_dr" value="true" />
+    <param name="use_ekf" value="true" />
+    <param name="use_depth" value="true" />
+    <param name="use_imu" value="true" />
+    
+    <param name="compute_error" value="true" />
+    <param name="plot_results" value="false" />
+  </node>
+
+  <!-- Robot state publisher resposible of publishing the static transforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="robot_description" to="urdf_file" />
+  </node>
+</launch>

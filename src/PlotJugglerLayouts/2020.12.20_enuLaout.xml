@@ -1,0 +1,478 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget name="Main Window" parent="main_window">
+  <plotmatrix columns="1" rows="1" tab_name="Map XY">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="11.065569" right="14.366266" left="12.523408" bottom="9.759781"/>
+    <limitY/>
+    <curve curve_x="/dr/pose/pose/position/x" R="214" name="/dr/pose/pose/position/[x;y]" curve_y="/dr/pose/pose/position/y" B="40" custom_transform="XYPlot" G="39"/>
+    <curve curve_x="/est/state/state/x" R="31" name="/est/state/state/[x;y]" curve_y="/est/state/state/y" B="180" custom_transform="XYPlot" G="119"/>
+    <curve curve_x="/rexrov2/pose_gt/pose/position/x" R="0" name="/rexrov2/pose_gt/pose/position/[x;y]" curve_y="/rexrov2/pose_gt/pose/position/y" B="0" custom_transform="XYPlot" G="0"/>
+    <transform value="XYPlot"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="3" rows="3" tab_name="Map">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="14.435907" right="-21.786217" left="-27.029330" bottom="12.521710"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/position/x" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/x" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/position/x" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="0">
+    <range top="10.996433" right="-21.786217" left="-27.029330" bottom="9.810638"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/position/y" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/y" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="7" name="/rexrov2/pose_gt/pose/position/y" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="0">
+    <range top="-23.527091" right="-21.786217" left="-27.102097" bottom="-23.777388"/>
+    <limitY/>
+    <curve R="255" name="/est/bar/map/z/pose/position/z" B="14" custom_transform="noTransform" G="127"/>
+    <curve R="31" name="/est/state/state/z" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/position/z" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="0" col="1">
+    <range top="0.338807" right="-21.786217" left="-27.029330" bottom="0.336461"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/linear/x" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/vx" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/linear/x" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="1">
+    <range top="0.211004" right="-21.786217" left="-27.029330" bottom="0.206119"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/linear/y" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/vy" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/linear/y" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="1">
+    <range top="-0.042918" right="-21.786217" left="-27.029330" bottom="-0.047190"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/linear/z" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/vz" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/linear/z" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="0" col="2">
+    <range top="0.028743" right="-21.786217" left="-27.029330" bottom="0.006143"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/roll_deg" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/roll" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/roll_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="2">
+    <range top="-0.329365" right="-21.786217" left="-27.029330" bottom="-0.360621"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/pitch_deg" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/pitch" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/pitch_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="2">
+    <range top="32.090385" right="-21.786217" left="-27.029330" bottom="31.193901"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/yaw_deg" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/state/state/yaw" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/yaw_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="3" rows="3" tab_name="RMSE">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="0.096770" right="-21.967947" left="-26.594383" bottom="0.011771"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_x" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_x" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="0">
+    <range top="0.029468" right="-21.967947" left="-26.594383" bottom="0.003861"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_y" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_y" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="0">
+    <range top="0.013912" right="-21.968142" left="-26.594383" bottom="0.010211"/>
+    <limitY/>
+    <curve R="31" name="/est/error/rmse_z" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="0" col="1">
+    <range top="0.000301" right="-21.967947" left="-26.594383" bottom="-0.000004"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_vx" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_vx" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="1">
+    <range top="0.000306" right="-21.967947" left="-26.594383" bottom="-0.000003"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_vy" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_vy" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="1">
+    <range top="0.002162" right="-21.967947" left="-26.594383" bottom="-0.000047"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_vz" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_vz" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="0" col="2">
+    <range top="0.011990" right="-21.967947" left="-26.594383" bottom="-0.000276"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_roll" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_roll" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="2">
+    <range top="0.017674" right="-21.967947" left="-26.594383" bottom="-0.000364"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_pitch" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_pitch" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="2">
+    <range top="0.013575" right="-21.967947" left="-26.594383" bottom="-0.000176"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/rmse_yaw" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/rmse_yaw" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="1" rows="2" tab_name="distance_error">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="0.041801" right="10.715833" left="0.777833" bottom="0.030412"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/dist_error" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/dist_error" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="255" name="/est/error/rmse_dist" B="14" custom_transform="noTransform" G="127"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="0">
+    <range top="0.726611" right="6.661953" left="2.522227" bottom="-0.654399"/>
+    <limitY/>
+    <curve curve_x="/dr/error/dist_traveled" R="214" name="/dr/error/dist_[error;traveled]" curve_y="/dr/error/dist_error" B="40" custom_transform="XYPlot" G="39"/>
+    <curve curve_x="/est/error/dist_traveled" R="31" name="/est/error/dist_[error;traveled]" curve_y="/est/error/dist_error" B="180" custom_transform="XYPlot" G="119"/>
+    <transform value="XYPlot"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="3" rows="3" tab_name="covariance">
+   <plot style="Lines" row="0" col="0">
+    <range top="2547275005544.149902" right="-21.786217" left="-27.020655" bottom="2241725004752.954590"/>
+    <limitY/>
+    <curve R="26" name="/est/state/covariance/x" B="56" custom_transform="noTransform" G="201"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="0">
+    <range top="2547275005544.333984" right="-21.786217" left="-27.020655" bottom="2241725004753.172363"/>
+    <limitY/>
+    <curve R="26" name="/est/state/covariance/y" B="56" custom_transform="noTransform" G="201"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="0">
+    <range top="16400000360.728651" right="-21.786217" left="-27.020655" bottom="-400000006.749481"/>
+    <limitY/>
+    <curve R="26" name="/est/state/covariance/z" B="56" custom_transform="noTransform" G="201"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="0" col="1">
+    <range top="16400.001000" right="-21.786217" left="-27.020655" bottom="-399.999000"/>
+    <limitY/>
+    <curve R="241" name="/est/state/covariance/vx" B="193" custom_transform="noTransform" G="76"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="1">
+    <range top="16400.001000" right="-21.786217" left="-27.020655" bottom="-399.999000"/>
+    <limitY/>
+    <curve R="148" name="/est/state/covariance/vy" B="189" custom_transform="noTransform" G="103"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="1">
+    <range top="16400.001000" right="-21.786217" left="-27.020655" bottom="-399.999000"/>
+    <limitY/>
+    <curve R="23" name="/est/state/covariance/vz" B="207" custom_transform="noTransform" G="190"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="0" col="2">
+    <range top="0.145568" right="-21.786217" left="-27.020655" bottom="0.122071"/>
+    <limitY/>
+    <curve R="31" name="/est/state/covariance/roll" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="2">
+    <range top="0.145568" right="-21.786217" left="-27.020655" bottom="0.122071"/>
+    <limitY/>
+    <curve R="214" name="/est/state/covariance/pitch" B="40" custom_transform="noTransform" G="39"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="2">
+    <range top="0.145567" right="-21.786217" left="-27.020655" bottom="0.122071"/>
+    <limitY/>
+    <curve R="188" name="/est/state/covariance/yaw" B="34" custom_transform="noTransform" G="189"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="2" rows="3" tab_name="plot">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="0.000209" right="-21.806439" left="-27.029330" bottom="-0.000253"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/angular/x" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/angular/x" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="0">
+    <range top="0.000141" right="-21.806439" left="-27.029330" bottom="-0.000434"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/angular/y" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/angular/y" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="0">
+    <range top="0.000519" right="-21.806439" left="-27.029330" bottom="-0.023446"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/twist/angular/z" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="0" name="/rexrov2/pose_gt/twist/angular/z" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="0" col="1">
+    <range top="1.000000" right="-26.102097" left="-27.102097" bottom="0.000000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="1">
+    <range top="1.000000" right="-26.102097" left="-27.102097" bottom="0.000000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="1">
+    <range top="1.000000" right="-26.102097" left="-27.102097" bottom="0.000000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="2" rows="3" tab_name="bias">
+   <plot style="Lines" row="0" col="0">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="31" name="/est/state/state/bias_ax" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="0">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="214" name="/est/state/state/bias_ay" B="40" custom_transform="noTransform" G="39"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="0">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="26" name="/est/state/state/bias_az" B="56" custom_transform="noTransform" G="201"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="0" col="1">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="255" name="/est/state/state/bias_gx" B="14" custom_transform="noTransform" G="127"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="1">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="241" name="/est/state/state/bias_gy" B="193" custom_transform="noTransform" G="76"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="1">
+    <range top="0.100000" right="-21.786217" left="-27.020655" bottom="-0.100000"/>
+    <limitY/>
+    <curve R="148" name="/est/state/state/bias_gz" B="189" custom_transform="noTransform" G="103"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="2" rows="4" tab_name="plot">
+   <plot style="LinesAndDots" row="0" col="0">
+    <range top="0.001063" right="-21.806439" left="-27.029330" bottom="0.000872"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/x" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/rexrov2/pose_gt/pose/orientation/x" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="1" col="0">
+    <range top="-0.002735" right="-21.806439" left="-27.029330" bottom="-0.002976"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/y" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/rexrov2/pose_gt/pose/orientation/y" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="2" col="0">
+    <range top="0.276395" right="-21.806439" left="-27.029330" bottom="0.268868"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/z" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/rexrov2/pose_gt/pose/orientation/z" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="LinesAndDots" row="3" col="0">
+    <range top="0.963173" right="-21.806439" left="-27.029330" bottom="0.961040"/>
+    <limitY/>
+    <curve R="214" name="/dr/pose/pose/orientation/w" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/rexrov2/pose_gt/pose/orientation/w" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="0" col="1">
+    <range top="0.028743" right="-21.786217" left="-27.029330" bottom="0.006143"/>
+    <limitY/>
+    <curve R="241" name="/dr/pose/pose/orientation/roll_deg" B="193" custom_transform="noTransform" G="76"/>
+    <curve R="31" name="/est/state/state/roll" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/roll_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="1" col="1">
+    <range top="-0.329365" right="-21.786217" left="-27.029330" bottom="-0.360621"/>
+    <limitY/>
+    <curve R="241" name="/dr/pose/pose/orientation/pitch_deg" B="193" custom_transform="noTransform" G="76"/>
+    <curve R="31" name="/est/state/state/pitch" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/pitch_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="2" col="1">
+    <range top="32.090385" right="-21.786217" left="-27.029330" bottom="31.193901"/>
+    <limitY/>
+    <curve R="241" name="/dr/pose/pose/orientation/yaw_deg" B="193" custom_transform="noTransform" G="76"/>
+    <curve R="31" name="/est/state/state/yaw" B="180" custom_transform="noTransform" G="119"/>
+    <curve R="0" name="/rexrov2/pose_gt/pose/orientation/yaw_deg" B="0" custom_transform="noTransform" G="0"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot style="Lines" row="3" col="1">
+    <range top="1.000000" right="-26.102097" left="-27.102097" bottom="0.000000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="1" rows="1" tab_name="plot">
+   <plot style="Lines" row="0" col="0">
+    <range top="0.041801" right="10.715833" left="0.777833" bottom="0.030412"/>
+    <limitY/>
+    <curve R="214" name="/dr/error/dist_error" B="40" custom_transform="noTransform" G="39"/>
+    <curve R="31" name="/est/error/dist_error" B="180" custom_transform="noTransform" G="119"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <currentPlotMatrix index="8"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="true"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="151"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="WebSocket Server"/>
+  <plugin status="idle" ID="ROS /rosout Visualization"/>
+  <plugin status="idle" ID="ROS Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets>
+  <snippet name="1st_derivative" language="JS">
+   <global>var prevX = 0
+var prevY = 0</global>
+   <equation>dx = time - prevX
+dy = value - prevY
+prevX = time
+prevY = value
+
+return dy/dx</equation>
+  </snippet>
+  <snippet name="1st_order_lowpass" language="JS">
+   <global>var prevY = 0
+var alpha = 0.1</global>
+   <equation>prevY = alpha * value + (1.-alpha) * prevY
+
+return prevY</equation>
+  </snippet>
+  <snippet name="2D_velocity" language="JS">
+   <global>var prev_x = 0
+var prev_y = 0
+var prev_t = 0</global>
+   <equation>X = $$your_odometry/position/x$$
+Y = $$your_odometry/position/y$$
+
+var dist = sqrt( (X-prev_x)*(X-prev_x) + (Y-prev_y)*(Y-prev_y) )
+var dT = time - prev_t
+
+prev_x = X
+prev_y = Y
+prev_t = time
+
+return dist / dT</equation>
+  </snippet>
+  <snippet name="average_two_curves" language="JS">
+   <global></global>
+   <equation>a = $$PLOT_A$$
+b = $$PLOT_B$$
+
+return (a+b)/2</equation>
+  </snippet>
+  <snippet name="integral" language="JS">
+   <global>var integral = 0</global>
+   <equation>integral += value
+return integral</equation>
+  </snippet>
+  <snippet name="rad_to_deg" language="JS">
+   <global></global>
+   <equation>return value*180/3.1417</equation>
+  </snippet>
+  <snippet name="remove_offset" language="JS">
+   <global>var is_first = true
+var first_value = 0</global>
+   <equation>if (is_first)
+{
+  is_first = false
+  first_value = value
+}
+
+return value - first_value</equation>
+  </snippet>
+  <snippet name="yaw_from_quaternion" language="JS">
+   <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+   <equation>return quaternionToYaw(x, y, z, w);</equation>
+  </snippet>
+ </snippets>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+

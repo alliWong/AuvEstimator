@@ -1,0 +1,91 @@
+<launch>
+
+   <arg name="record" default="false" />
+   <!-- Rosbag record -->
+   <node pkg="rosbag" type="record" name="rosbag_record_standard_data" respawn="true" output="screen" args="-o $(find auv_estimator)/Rosbags/Trial3ComputeError /est/error"
+  	if="$(arg record)"
+   />
+
+
+   <!-- Read data -->
+   <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/allison/RosBags/CurvedTrajectory.bag">
+   </node>
+
+
+   <!-- Start barometer -->
+   <node pkg="auv_estimator" name="Barometer" type="barometer.py" output="screen">
+	<param name ="barOffset" value="0.85"/>	
+	<param name ="barTopic" value="/rexrov2/pressure"/>
+   </node>
+
+
+   <!-- EKF -->
+   <node pkg="auv_estimator" name="EkfEst" type="uuvEkfRosNode.py" output="screen">
+	<param name ="dvlTopic" value="/rexrov2/dvl"/>
+	<param name ="imuTopic" value="/rexrov2/imu"/>
+	<param name ="depthTopic" value="/bar/depth"/>
+	<param name ="useEnu" value="1"/>
+
+	<param name ="est_dt" value="0.018" />
+	<param name ="dvl_offsetX" value="0.3"/>
+	<param name ="dvl_offsetY" value="0.5"/>
+	<param name ="dvl_offsetZ" value="-0.68"/>
+
+	<param name ="imu_rbtAccBiasX" value="0"/>
+	<param name ="imu_rbtAccBiasY" value="0"/>
+	<param name ="imu_rbtAccBiasZ" value="0"/>
+	<param name ="imu_rbtGyrBiasX" value="0"/>
+	<param name ="imu_rbtGyrBiasY" value="0"/>
+	<param name ="imu_rbtGyrBiasZ" value="0"/>
+ 
+	<param name ="est_useDvlLinPos" value="1"/>
+	<param name ="est_useImuLinPos" value="1"/>
+
+	<param name ="est_R_linPos" value="0" />
+	<param name ="est_R_linPosZ" value="2" />
+	<param name ="est_R_angPos" value="6" /> 
+	<param name ="est_R_linVel" value="0.001" />
+	<param name ="est_R_acBias" value="0.00004" />
+	<param name ="est_R_gyBias" value="0.0007" />
+
+	<param name ="est_Q_linPos" value="10000"/>
+	<param name ="est_Q_angPos" value="100" />
+	<param name ="est_Q_linVel" value="10" />
+	<param name ="est_Q_acBias" value="10" />
+	<param name ="est_Q_gyBias" value="10" />
+   </node>
+
+
+   <!-- Dead reckoning -->
+   <node pkg="auv_estimator" name="DeadReckon" type="deadReckonRosNode.py" output="screen">
+	<param name ="dvlTopic" value="/rexrov2/dvl"/>
+	<param name ="imuTopic" value="/rexrov2/imu"/>
+	<param name ="useEnu" value="1"/>
+	<param name ="dvl_offsetX" value="0.3"/>
+	<param name ="dvl_offsetY" value="0.5"/>
+	<param name ="dvl_offsetZ" value="-0.68"/>
+   </node>
+
+
+   <!-- Analyze data -->
+<!--
+   <node pkg="auv_estimator" name="ComputeError" type="computeErrorRosNode.py" output="screen">
+	<param name ="groundTruthTopic" value="/rexrov2/pose_gt"/>
+	<param name ="estimatorTopic" value="/est/state"/>
+	<param name ="deadReckoningTopic" value="/dr/pose"/>
+   </node>
+-->
+<!--
+   <node pkg="auv_estimator" name="ComputeError2" type="ORIGINAL_computeErrorRosNode.py" output="screen">
+	<param name ="groundTruthTopic" value="/rexrov2/pose_gt"/>
+	<param name ="estimatorTopic" value="/est/state"/>
+	<param name ="deadReckoningTopic" value="/dr/pose"/>
+	<param name ="dvlTopic" value="/rexrov2/dvl"/>
+	<param name ="imuTopic" value="/rexrov2/imu"/>
+   </node>
+-->
+
+
+
+</launch>
+
