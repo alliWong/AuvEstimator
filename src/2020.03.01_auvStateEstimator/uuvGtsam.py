@@ -6,11 +6,11 @@
 # """
 
 import gtsam
-import numpy as np
-from collections import deque
 import heapq
 import time
+import numpy as np
 from commons import *
+from collections import deque
 
 class GtsamEstimator():
 	""" ISAM2 Fusion"""
