@@ -48,20 +48,15 @@ class GtsamEstimator():
 		self.imu_preint_params.setOmegaCoriolis(np.array(params['omega_coriolis']))
 
 		# Initial state
-		self.current_time = 0
+		self.last_opt_time = self.current_time = 0
 		self.current_global_pose = numpy_pose_to_gtsam(
 			params['init_pos'], 
 			params['init_ori'])
 		self.predict_pose = self.current_global_pose
 		self.current_global_vel = np.asarray(params['init_vel'])
-		self.current_global_bias = gtsam.imuBias_ConstantBias(
+		self.current_bias = gtsam.imuBias_ConstantBias(
 			np.asarray(params['init_acc_bias']),
 			np.asarray(params['init_gyr_bias']))
-		# Store prediction variables
-		self.last_opt_time = self.current_time
-		self.last_opt_pose = self.current_global_pose
-		self.last_opt_vel = self.current_global_vel
-		self.last_opt_bias = self.current_global_bias
 		self.imu_accum = gtsam.PreintegratedImuMeasurements(self.imu_preint_params)
 		# uncertainty of the initial state
 		self.init_pos_cov = gtsam.noiseModel_Isotropic.Sigmas(np.array([
@@ -93,13 +88,13 @@ class GtsamEstimator():
 		self.new_factors.add(prior_vel_factor)
 		prior_bias_factor = gtsam.PriorFactorConstantBias(
 			self.biasKey,
-			self.current_global_bias,
+			self.current_bias,
 			self.init_bias_cov)
 		self.new_factors.add(prior_bias_factor)
 		# Initial estimates
 		self.new_initial_ests.insert(self.poseKey, self.current_global_pose)
 		self.new_initial_ests.insert(self.velKey, self.current_global_vel)
-		self.new_initial_ests.insert(self.biasKey, self.current_global_bias)
+		self.new_initial_ests.insert(self.biasKey, self.current_bias)
 
 	def AddBarMeasurement(self, time, position):
 		""" Add barometer measurements 
@@ -147,19 +142,19 @@ class GtsamEstimator():
 		while True:
 			if not self.imu_opt_meas:
 				break
-			imu_sample = heapq.heappop(self.imu_opt_meas)
-			if imu_sample[0] < meas_time:
-				imu_samples.append(imu_sample)
+			sample = heapq.heappop(self.imu_opt_meas)
+			if sample[0] < meas_time:
+				imu_samples.append(sample)
 			else:
 				break
 		if len(imu_samples) < self.min_imu_sample:
-			# Must have (at least 2) new IMU measurements since last meas update
+			# Must have (at least 2) new IMU measurements since last measurement update
 			# If not, put samples back and ignore this measurement
-			for imu_sample in imu_samples:
-				heapq.heappush(self.imu_opt_meas, imu_sample)
+			for sample in imu_samples:
+				heapq.heappush(self.imu_opt_meas, sample)
 			print("Ignoring measurement at: {}".format(meas_time))
 			return
-		# Update pose & velocity estimate
+		# Update pose, velocity, and bias keys
 		self.poseKey += 1
 		self.velKey += 1
 		self.biasKey += 1
@@ -192,51 +187,43 @@ class GtsamEstimator():
 		self.Optimize(meas_time, imu_samples)
 
 	def ImuPredict(self):
-		""" Predict variables with IMU """
+		""" Predict NavState with IMU """
 		if self.current_time > self.last_opt_time: # when new optimized pose is available
-			# store state
+			# store state at measurement time
 			self.last_opt_time = self.current_time
-			self.last_opt_pose = self.current_global_pose
-			self.last_opt_vel = self.current_global_vel
-			self.last_opt_bias = self.current_global_bias
 			# start new integration onwards from optimization time
 			self.imu_accum.resetIntegration()
-			#print("Oldest IMU, newest IMU, opt: {}, {}, {}".format(imu_samples[0][0], imu_samples[-1][0], last_opt_time))
+			#print("Old IMU, New IMU, opt: {}, {}, {}".format(imu_samples[0][0], imu_samples[-1][0], last_opt_time))
 			new_imu_samples = []
 			for sample in self.imu_samples:
 				if sample[0] > self.last_opt_time:
 					self.imu_accum.integrateMeasurement(sample[1], sample[2], sample[3])
 					new_imu_samples.append(sample)
 			self.imu_samples = new_imu_samples
-		# Retrieve new sample from the queue
+		# Extract new samples from queue
 		(time, linear_acceleration, angular_velocity, dt) = heapq.heappop(self.imu_meas_predict)
-		# Store sample for re-integration when new measurement is available
+		# Store sample for integration when new measurement is available
 		self.imu_samples.append((time, linear_acceleration, angular_velocity, dt))
 		# Integrate
 		self.imu_accum.integrateMeasurement(linear_acceleration, angular_velocity, dt)
-		# Predict variables (NavState)
-		predicted_nav_state = self.imu_accum.predict(
-			gtsam.NavState(self.last_opt_pose, self.last_opt_vel), self.last_opt_bias)
-		pos, ori = gtsam_pose_to_numpy(predicted_nav_state.pose())
-		return (pos, ori, self.last_opt_vel, self.last_opt_bias.accelerometer(), self.last_opt_bias.gyroscope())
+		# Compute NavState
+		predicted_nav_state = self.imu_accum.predict(gtsam.NavState(self.current_global_pose, self.current_global_vel), self.current_bias)
+		# extract position and orientation from NavState
+		pos, ori = gtsam_pose_to_numpy(predicted_nav_state.pose()) 
+		return (pos, ori, self.current_global_vel, self.current_bias.accelerometer(), self.current_bias.gyroscope())
 
 	def ImuUpdate(self, imu_samples):
-		""" Update using IMU factor """
+		""" Update NavState using IMU factor """
 		# Reset integration
 		imu_accum = gtsam.PreintegratedImuMeasurements(self.imu_preint_params)
-		# Preintegrate IMU measurements up to meas_time
-		for imu_sample in imu_samples:
-			imu_accum.integrateMeasurement(imu_sample[1], imu_sample[2], imu_sample[3])
-		# Predict pose at meas_time for optimization
-		last_opt_pose = self.current_global_pose
-		last_opt_vel = self.current_global_vel
-		last_opt_bias = self.current_global_bias
-		# Predict pose using the last optimized state and current bias estimate
-		predicted_nav_state = imu_accum.predict(
-			gtsam.NavState(last_opt_pose, last_opt_vel), last_opt_bias)
+		# Integrate IMU measurements at measurement time
+		for sample in imu_samples:
+			imu_accum.integrateMeasurement(sample[1], sample[2], sample[3])
+		# Compute NavState
+		predicted_nav_state = imu_accum.predict(gtsam.NavState(self.current_global_pose, self.current_global_vel), self.current_bias)
 		# Add IMU factor
 		imu_factor = gtsam.ImuFactor(
-			self.poseKey - 1, self.velKey - 1,
+			self.poseKey-1, self.velKey-1,
 			self.poseKey, self.velKey,
 			self.biasKey, imu_accum)
 		self.new_factors.add(imu_factor)
@@ -244,23 +231,23 @@ class GtsamEstimator():
 
 	def Optimize(self, meas_time, imu_samples):
 		"""Perform optimization"""
-		# perform IMU preintegration until meas_time
+		# IMU preintegration until measurement time
 		predicted_nav_state = self.ImuUpdate(imu_samples)
-		# add current pose to initial estimates
+		# Add estimates
 		self.new_initial_ests.insert(self.poseKey, predicted_nav_state.pose())
 		self.new_initial_ests.insert(self.velKey, predicted_nav_state.velocity())
-		self.new_initial_ests.insert(self.biasKey, self.current_global_bias)
-		# add factor for bias evolution
+		self.new_initial_ests.insert(self.biasKey, self.current_bias)
+		# Add IMU bias factor
 		bias_factor = gtsam.BetweenFactorConstantBias(
-			self.biasKey - 1, self.biasKey, gtsam.imuBias_ConstantBias(), self.bias_cov)
+			self.biasKey-1, self.biasKey, gtsam.imuBias_ConstantBias(), self.bias_cov)
 		self.new_factors.add(bias_factor)
+		# Compute result
 		result = self.Isam2Update()
 		if result:
-			# update current state
 			self.current_time = meas_time
 			self.current_global_pose = result.atPose3(self.poseKey)
 			self.current_global_vel = result.atVector(self.velKey)
-			self.current_global_bias = result.atimuBias_ConstantBias(self.biasKey)
+			self.current_bias = result.atimuBias_ConstantBias(self.biasKey)
 
 	def Isam2Update(self):
 		"""ISAM2 update and pose estimation"""
@@ -269,14 +256,11 @@ class GtsamEstimator():
 			# ISAM2 update
 			self.isam2.update(self.new_factors, self.new_initial_ests)
 			result = self.isam2.calculateEstimate()
-		except RuntimeError as e:
-			print("Runtime error in optimization: {}".format(e))
 		except IndexError as e:
 			print("Index error in optimization: {}".format(e))
 		except TypeError as e:
 			print("Type error in optimization: {}".format(e))
-
-		# reset
+		# Reset
 		self.new_factors.resize(0)
 		self.new_initial_ests.clear()
 		return result
