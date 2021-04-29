@@ -56,7 +56,7 @@ class GtsamEstRosNode():
 		self.use_ekf = rospy.get_param('~use_ekf', False) # enable/disable the use of EKF estimator messages
 		self.use_fgo = rospy.get_param('~use_fgo', False) # enable/disable the use of FGO estimator messages
 		# Plot information
-		self.plot_results = rospy.get_param('~plot_results', False) # plot results after processing the bag file
+		self.plot_results = rospy.get_param('~plot_results', False) # plot data after processing the bag file
 		self.save_dir = rospy.get_param('~save_dir', '/tmp') # save resulting images in a directory
 		# Error analysis
 		self.compute_error = rospy.get_param('~compute_error', False) # perform error analysis after processing the bag file
@@ -119,7 +119,7 @@ class GtsamEstRosNode():
 				self.fusion_items = "DVL + IMU"
 			elif self.use_dvl and self.use_bar:
 				self.fusion_items = "DVL + BAR + IMU"
-			self.results = {'IMU': [], 'GT': [], 'BAR': [], 'DVL': [], 'DR': [], 'EKF': [], self.fusion_items: []}
+			self.plot_data = {'IMU': [], 'GT': [], 'BAR': [], 'DVL': [], 'DR': [], 'EKF': [], self.fusion_items: []}
 		
 		# Error analysis variables
 		if self.compute_error:
@@ -177,11 +177,11 @@ class GtsamEstRosNode():
 			if self.compute_error: # compute error if initialized
 				rospy.loginfo("Computing error. Please wait..")
 				errorAnalysis.compute_results_error(self.error_results, self.use_fgo, self.use_gt, self.use_dr, self.use_ekf, self.use_bar)
-			if self.plot_results: # plot results if initialized
+			if self.plot_results: # plot data if initialized
 				rospy.loginfo("Preparing plots. Please wait..")
 				if not os.path.exists(self.save_dir):
 					os.makedirs(self.save_dir)
-				plots.plot_all(self.results, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl)
+				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl)
 		# Run GTSAM using ROS subscribers (real time)
 		else: 
 			# Subscribers
@@ -193,7 +193,7 @@ class GtsamEstRosNode():
 	def ImuCallback(self, msg):
 		""" IMU Callback messages """
 		if self.imu_last_update_time:
-			# Convert to numpy
+			# sensor measurements
 			self.lin_acc = np.array([
 				msg.linear_acceleration.x,
 				msg.linear_acceleration.y,
@@ -222,7 +222,7 @@ class GtsamEstRosNode():
 			dt = msg.header.stamp.to_sec() - self.imu_last_update_time
 			if self.fixed_dt:
 				dt = self.fixed_dt
-			# IMU update
+			# add measurements to factor graph
 			imu_pos, imu_ori, vel, acc_bias, gyr_bias = self.gtsam_fusion.AddImuMeasurement(
 				msg.header.stamp.to_sec(), self.lin_acc, self.ang_vel, dt)
 			# convert pose from IMU frame to robot frame
@@ -234,13 +234,14 @@ class GtsamEstRosNode():
 			self.fgo_pose = np.concatenate((imu_pos, euler_imu_ori, vel), axis=0)
 			# publish pose
 			self.PublishPose(msg.header.stamp, rbt_pos, rbt_ori)
+
 			# data for plots
 			if self.plot_results:
 				# store input
-				self.results['IMU'].append(
+				self.plot_data['IMU'].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec(), dt]), self.lin_acc, self.ang_vel), axis=0))
 				# store output
-				self.results[self.fusion_items].append(
+				self.plot_data[self.fusion_items].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), imu_pos, euler_imu_ori, vel, acc_bias, gyr_bias), axis=0))
 
 		self.imu_last_update_time = msg.header.stamp.to_sec()
@@ -251,16 +252,19 @@ class GtsamEstRosNode():
 			msg.header.stamp.to_sec() - self.bar_last_update_time > self.bar_interval):
 			self.bar_last_update_time = msg.header.stamp.to_sec()
 
+			# sensor measurements
 			self.depth = np.array([msg.pose.pose.position.z])
+
+			# add measurements to factor graph
+			if self.use_bar:
+				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, self.depth)
+			if not self.use_bar:
+				return
 
 			# data for plots
 			if self.plot_results:
-				self.results['BAR'].append(
+				self.plot_data['BAR'].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.depth), axis=0))
-			if not self.use_bar:
-				return
-			if self.use_bar:
-				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, self.depth)
 
 	def DvlCallback(self, msg):
 		""" DVL Callback messages """
@@ -268,10 +272,12 @@ class GtsamEstRosNode():
 			msg.header.stamp.to_sec() - self.dvl_last_update_time > self.dvl_interval):
 			self.dvl_last_update_time = msg.header.stamp.to_sec()
 
-			#############################################################################
+			# sensor measurements
 			dvl_vel = np.array([msg.velocity.x,
 								msg.velocity.y,
 								msg.velocity.z])
+
+			#############################################################################
 			# Setup dvl offset array
 			dvl_offset = array([self.sen_dvl_offsetX,
 								self.sen_dvl_offsetY,
@@ -284,32 +290,25 @@ class GtsamEstRosNode():
 			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, dvl_enuTransRbtLinVel).T
 			#############################################################################
 
-			if self.plot_results:
-				self.results['DVL'].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.sen_dvl_mapLinVel), axis=0))
-			if not self.use_dvl:
-				return
+			# add measurements to factor graph
 			if self.use_dvl:
 				self.gtsam_fusion.AddDvlMeasurement(self.dvl_last_update_time, self.sen_dvl_mapLinVel, dvl_enuTransRbtLinVel)
+			if not self.use_dvl:
+				return
+
+			# data for plots
+			if self.plot_results:
+				self.plot_data['DVL'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.sen_dvl_mapLinVel), axis=0))
 
 	def GtCallback(self, msg):
 		""" GT Callback messages """
-		gt_pos = np.array([msg.pose.pose.position.x,
-						msg.pose.pose.position.y,
-						msg.pose.pose.position.z])
-		gt_ori = np.array([msg.pose.pose.orientation.x,
-						msg.pose.pose.orientation.y,
-						msg.pose.pose.orientation.z,
-						msg.pose.pose.orientation.w])
-		gt_vel = np.array([msg.twist.twist.linear.x,
-						msg.twist.twist.linear.y,
-						msg.twist.twist.linear.z])
-
 		# Change incoming ground truth quarternion data into euler [rad]
 		gt_quaternion = (msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
 		gt_euler = euler_from_quaternion(gt_quaternion)
 		unwrapEuler = np.unwrap(gt_euler)
-		# Convert to numpy
+
+		# data
 		self.gt_pose = np.array([msg.pose.pose.position.x,
 							msg.pose.pose.position.y,
 							msg.pose.pose.position.z,
@@ -320,21 +319,21 @@ class GtsamEstRosNode():
 							msg.twist.twist.linear.y,
 							msg.twist.twist.linear.z])
 
+		# data for plots
 		if self.plot_results:
-			euler_gt_ori = np.asarray(euler_from_quaternion(gt_ori)) / np.pi * 180.
-			self.results['GT'].append(
+			self.plot_data['GT'].append(
 				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 		if not self.use_gt:
 			return
 			
-		# # data for error analysis
-		# if self.compute_error:
-		# 	# grab estimator pose
-		# 	self.error_results['fgo'].append(
-		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
-		# 	# grab estimator pose when ground truth is updated
-		# 	self.error_results['fgo_gt'].append(
-		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+		# data for error analysis
+		if self.compute_error:
+			# grab estimator pose
+			self.error_results['fgo'].append(
+				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+			# grab estimator pose when ground truth is updated
+			self.error_results['fgo_gt'].append(
+				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 
 	def DrCallback(self, msg):
 		""" DR Callback messages """
@@ -342,6 +341,7 @@ class GtsamEstRosNode():
 			msg.header.stamp.to_sec() - self.dr_last_update_time > self.dr_interval):
 			self.dr_last_update_time = msg.header.stamp.to_sec()
 
+			# data
 			self.dr_pose = np.array([msg.state.x,
 								msg.state.y,
 								self.depth,
@@ -354,7 +354,7 @@ class GtsamEstRosNode():
 
 			# data for plots
 			if self.plot_results:
-				self.results['DR'].append(
+				self.plot_data['DR'].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.dr_pose), axis=0))
 
 			# data for error analysis
@@ -372,6 +372,7 @@ class GtsamEstRosNode():
 			msg.header.stamp.to_sec() - self.ekf_last_update_time > self.ekf_interval):
 			self.ekf_last_update_time = msg.header.stamp.to_sec()
 
+			# data
 			self.ekf_pose = np.array([msg.state.x,
 								msg.state.y,
 								msg.state.z,
@@ -384,7 +385,7 @@ class GtsamEstRosNode():
 
 			# data for plots
 			if self.plot_results:
-				self.results['EKF'].append(
+				self.plot_data['EKF'].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.ekf_pose), axis=0))
 
 			# data for error analysis
