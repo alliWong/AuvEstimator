@@ -113,18 +113,12 @@ class GtsamEstRosNode():
 		""" Analysis/Processing variables """
 		# Plotting variables
 		if self.plot_results:
-			if self.use_gt:
-				self.fusion_items = "POSE + IMU"
-			elif self.use_bar:
+			if self.use_bar:
 				self.fusion_items = "BAR + IMU"
-			elif self.use_bar and self.use_gt:
-				self.fusion_items = "POSE + BAR + IMU"
 			elif self.use_dvl:
 				self.fusion_items = "DVL + IMU"
 			elif self.use_dvl and self.use_bar:
 				self.fusion_items = "DVL + BAR + IMU"
-			elif self.use_dvl and self.use_bar and self.use_gt:
-				self.fusion_items = "DVL + BAR + IMU + POSE"
 			self.results = {'IMU': [], 'GT': [], 'BAR': [], 'DVL': [], 'DR': [], 'EKF': [], self.fusion_items: []}
 		
 		# Error analysis variables

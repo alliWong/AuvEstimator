@@ -26,7 +26,6 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	"""
 	Plotting estimators, ground truth, and dead reckoning trajectories
 	"""
-	""" Input is a dict containing the input and output """
 	# convert list to np array for easier operation
 	data_np = {}
 	for meas_type, samples in data.items():
@@ -45,7 +44,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 1], sample_array[:, 2],  sample_array[:, 3], 'o', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 1], sample_array[:, 2],  sample_array[:, 3], 'o', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='Dead reckoning')
@@ -73,7 +72,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='Dead reckoning')
@@ -101,7 +100,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='Dead reckoning')
@@ -129,7 +128,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	ax = fig.add_subplot(111)
 	legends = []
 	for meas_type, sample_array in data_np.items():
-		# if (meas_type == "ground truth" and use_gt):
+		# if (meas_type == "GT" and use_gt):
 		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		if (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -159,7 +158,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	ax = fig.add_subplot(111)
 	legends = []
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 4], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "measurements (IMU)" and use_imu):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r',  label='measurements')
@@ -187,7 +186,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 5], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "measurements (IMU)" and use_imu):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -215,7 +214,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 6], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "measurements (IMU)" and use_imu):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -244,7 +243,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 7], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 7], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -272,7 +271,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 8], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 8], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -300,7 +299,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	for meas_type, sample_array in data_np.items():
-		if (meas_type == "ground truth" and use_gt):
+		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 9], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='Ground truth')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 9], '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
