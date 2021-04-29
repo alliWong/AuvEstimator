@@ -10,25 +10,7 @@ import numpy as np
 from collections import deque
 import heapq
 import time
-
-def gtsam_pose_to_numpy(gtsam_pose):
-	"""Convert GTSAM pose to numpy arrays (position, orientation)"""
-	position = np.array([gtsam_pose.x(),
-						 gtsam_pose.y(),
-						 gtsam_pose.z()])
-	q = gtsam_pose.rotation().quaternion()
-	orientation = np.array([q[1], q[2], q[3], q[0]]) # xyzw
-	return position, orientation
-
-def numpy_pose_to_gtsam(position, orientation):
-	"""Convert numpy arrays (position, orientation) to GTSAM pose"""
-	return gtsam.Pose3(gtsam.Rot3.Quaternion(orientation[3],
-											 orientation[0],
-											 orientation[1],
-											 orientation[2]),
-								gtsam.Point3(position[0],
-											 position[1],
-											 position[2]))
+from commons import *
 
 class GtsamEstimator():
 	""" ISAM2 Fusion"""

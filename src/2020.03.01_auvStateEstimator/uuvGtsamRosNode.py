@@ -78,7 +78,7 @@ class GtsamEstRosNode():
 		params['int_cov_sigma'] = rospy.get_param('~int_cov_sigma', 0) # associated error when integrating velocities for position
 		params['setUse2ndOrderCoriolis'] = rospy.get_param('~setUse2ndOrderCoriolis', False) # set 2nd order Coriolis
 		params['omega_coriolis'] = rospy.get_param('~omega_coriolis', [0, 0, 0]) # set omega Coriolis
-		# initial vehicle state (default values assume that the robot is statioary at origin)
+		# initial vehicle state
 		params['init_pos'] = rospy.get_param('~init_pos', [0, 0, -25]) # vehicle initial linear position [m]
 		params['init_ori'] = rospy.get_param('~init_ori', [0, 0, 0, 1]) # vehicle initial angular position [quaternion]
 		params['init_vel'] = rospy.get_param('~init_vel', [0, 0, 0]) # vehicle initial velocity [m/s]

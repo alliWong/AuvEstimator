@@ -4,6 +4,8 @@ This file is a compilation of functions.
 """
 import numpy as np
 from numpy import matrix, cos, sin, tan, power, mean, sqrt
+import gtsam
+
 
 # Skew symmetric function
 def SkewSymmetric(s):
@@ -91,3 +93,23 @@ def PressureToDepth(pressure, barOffset):
 # Create 3d double numpy np.array
 def vector3(x, y, z):
     return np.array([x, y, z], dtype=np.float)
+
+
+def gtsam_pose_to_numpy(gtsam_pose):
+	"""Convert GTSAM pose to numpy arrays (position, orientation)"""
+	position = np.array([gtsam_pose.x(),
+						 gtsam_pose.y(),
+						 gtsam_pose.z()])
+	q = gtsam_pose.rotation().quaternion()
+	orientation = np.array([q[1], q[2], q[3], q[0]]) # xyzw
+	return position, orientation
+
+def numpy_pose_to_gtsam(position, orientation):
+	"""Convert numpy arrays (position, orientation) to GTSAM pose"""
+	return gtsam.Pose3(gtsam.Rot3.Quaternion(orientation[3],
+											 orientation[0],
+											 orientation[1],
+											 orientation[2]),
+								gtsam.Point3(position[0],
+											 position[1],
+											 position[2]))
