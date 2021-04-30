@@ -22,6 +22,15 @@ class GtsamEstimator():
 		self.opt_meas = [] # optimizes measurements
 		self.__opt_meas_buffer_time = params['opt_meas_buffer_time']
 
+		""" IMU Preintegration """
+		# IMU preintegration parameters
+		self.imu_preint_params = gtsam.PreintegrationParams(np.asarray(params['g']))
+		self.imu_preint_params.setAccelerometerCovariance(np.eye(3) * np.power(params['acc_nd_sigma'], 2))
+		self.imu_preint_params.setGyroscopeCovariance(np.eye(3) * np.power(params['acc_nd_sigma'], 2))
+		self.imu_preint_params.setIntegrationCovariance(np.eye(3) * params['int_cov_sigma']**2)
+		self.imu_preint_params.setUse2ndOrderCoriolis(params['setUse2ndOrderCoriolis'])
+		self.imu_preint_params.setOmegaCoriolis(np.array(params['omega_coriolis']))
+
 		""" Initialize Parameters """
 		# ISAM2 initialization
 		isam2_params = gtsam.ISAM2Params()
@@ -38,22 +47,14 @@ class GtsamEstimator():
 		self.velKey = gtsam.symbol(ord('v'), 0)
 		self.biasKey = gtsam.symbol(ord('b'), 0)
 
-		""" IMU Preintegration """
-		# IMU preintegration parameters
-		self.imu_preint_params = gtsam.PreintegrationParams(np.asarray(params['g']))
-		self.imu_preint_params.setAccelerometerCovariance(np.eye(3) * np.power(params['acc_nd_sigma'], 2))
-		self.imu_preint_params.setGyroscopeCovariance(np.eye(3) * np.power(params['acc_nd_sigma'], 2))
-		self.imu_preint_params.setIntegrationCovariance(np.eye(3) * params['int_cov_sigma']**2)
-		self.imu_preint_params.setUse2ndOrderCoriolis(params['setUse2ndOrderCoriolis'])
-		self.imu_preint_params.setOmegaCoriolis(np.array(params['omega_coriolis']))
-
+		""" Set initial variables """
 		# Initial state
 		self.last_opt_time = self.current_time = 0
 		self.current_global_pose = numpy_pose_to_gtsam(
 			params['init_pos'], 
 			params['init_ori'])
-		self.predict_pose = self.current_global_pose
-		self.current_global_vel = np.asarray(params['init_vel'])
+		self.current_global_vel = np.asarray(
+			params['init_vel'])
 		self.current_bias = gtsam.imuBias_ConstantBias(
 			np.asarray(params['init_acc_bias']),
 			np.asarray(params['init_gyr_bias']))
@@ -68,13 +69,15 @@ class GtsamEstimator():
 			params['init_acc_bias_cov'], params['init_acc_bias_cov'], params['init_acc_bias_cov'],
 			params['init_gyr_bias_cov'], params['init_gyr_bias_cov'], params['init_gyr_bias_cov']]))
 		# measurement noise
-		self.dvl_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(params['dvl_cov']))
-		self.bar_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(params['bar_cov']))
+		self.dvl_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(
+			params['dvl_cov']))
+		self.bar_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(
+			params['bar_cov']))
 		self.bias_cov = gtsam.noiseModel_Isotropic.Sigmas(np.concatenate((
 			params['sigma_acc_bias_evol'],
 			params['sigma_gyr_bias_evol'])))
 
-		""" Set initial variables """
+		""" Set initial state """
 		# Initial factors
 		prior_pose_factor = gtsam.PriorFactorPose3(
 			self.poseKey,
