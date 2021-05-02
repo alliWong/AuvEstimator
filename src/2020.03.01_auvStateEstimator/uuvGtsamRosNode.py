@@ -106,6 +106,7 @@ class GtsamEstRosNode():
 		self.ekf_last_update_time = None # EKF time since last update 
 		# pose variables
 		self.last_rbt_pose = None # last robot pose in map frame
+		self.fgo_pose = None # FGO pose message
 		self.gt_pose = None # GT pose message
 		self.ekf_pose = None # EKF pose message
 		self.dr_pose = None # DR pose message
@@ -244,6 +245,16 @@ class GtsamEstRosNode():
 				self.plot_data[self.fusion_items].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), imu_pos, euler_imu_ori, vel, acc_bias, gyr_bias), axis=0))
 
+			# data for error analysis
+			if self.compute_error:
+				# grab estimator pose
+				self.error_results['fgo'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+				# grab estimator pose when ground truth is updated
+				self.error_results['fgo_gt'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+
+
 		self.imu_last_update_time = msg.header.stamp.to_sec()
 
 	def BarCallback(self, msg):
@@ -326,14 +337,14 @@ class GtsamEstRosNode():
 		if not self.use_gt:
 			return
 			
-		# data for error analysis
-		if self.compute_error:
-			# grab estimator pose
-			self.error_results['fgo'].append(
-				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
-			# grab estimator pose when ground truth is updated
-			self.error_results['fgo_gt'].append(
-				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+		# # data for error analysis
+		# if self.compute_error:
+		# 	# grab estimator pose
+		# 	self.error_results['fgo'].append(
+		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+		# 	# grab estimator pose when ground truth is updated
+		# 	self.error_results['fgo_gt'].append(
+		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 
 	def DrCallback(self, msg):
 		""" DR Callback messages """

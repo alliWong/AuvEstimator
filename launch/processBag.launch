@@ -16,7 +16,7 @@
     <param name ="dvl_offsetZ" value="-0.68"/>
 
     <param name="bar_interval" value="0.5" />
-    <param name="dvl_interval" value="2"/>
+    <param name="dvl_interval" value="0.9"/>
 
     <param name="use_gt" value="true" />
     <param name="use_dr" value="true" />
@@ -25,7 +25,7 @@
     <param name="use_bar" value="true" />
     <param name="use_dvl" value="true" />
 
-    <param name="compute_error" value="false" />
+    <param name="compute_error" value="true" />
     <param name="plot_results" value="true" />
   </node>
 

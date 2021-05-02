@@ -173,19 +173,19 @@ class GtsamEstimator():
 		elif meas_type == 'dvl':
 			dvl_vel = measurement[2]
 			b_dvl_vel = measurement[3]
-			dvl_factor = gtsam.PriorFactorVelTest2(
+			dvl_factor = gtsam.PriorFactorVel(
 				self.poseKey,
 				self.velKey,
 				b_dvl_vel,
 				self.dvl_cov)
 			self.new_factors.add(dvl_factor)
-			# print('#########################################################')
-			# print('*****GTSAM EVAL*****')
-			# print('FACTOR: \n', dvl_factor)
-			# print('B_MEAS_DVL: \n', b_dvl_vel)
-			# print('N_MEAS_DVL: \n', dvl_vel)
-			# print('N_PRED_VEL: \n', self.current_global_vel)
-			# print('N_PRED_POSE: \n', self.current_global_pose)
+			print('#########################################################')
+			print('*****GTSAM EVAL*****')
+			print('N_PRED_POSE: \n', self.current_global_pose)
+			print('N_PRED_VEL: \n', self.current_global_vel)
+			print('B_MEAS_DVL: \n', b_dvl_vel)
+			print('N_MEAS_DVL: \n', dvl_vel)
+
 		# Optimize measurements
 		self.Optimize(meas_time, imu_samples)
 
