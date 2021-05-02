@@ -15,7 +15,7 @@
     <param name ="dvl_offsetY" value="0.5"/>
     <param name ="dvl_offsetZ" value="-0.68"/>
 
-    <param name="bar_interval" value="1" />
+    <param name="bar_interval" value="0.5" />
     <param name="dvl_interval" value="1"/>
 
     <param name="use_gt" value="true" />
