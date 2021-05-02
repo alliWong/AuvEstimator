@@ -25,7 +25,7 @@
 File | Description
 -----|------------
 processBag.launch | File to run gtsam core files on bag data
-uuvGtsam.py | GTSAM state estimator script.
+![uuvGtsam.py](/src/StateEstimator/uuvGtsam.py) | GTSAM state estimator script.
 uuvGtsamRosNode.py | Ros wrapper for GTSAM base code (uuvGtsam.py)
 plots.py | File to generate plots.
 errorAnalysis.py | Computes RMSE between the EKF, FGO, and dead reckoning against ground truth.
