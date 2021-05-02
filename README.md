@@ -26,11 +26,11 @@ File | Description
 -----|------------
 processBag.launch | File to run gtsam core files on bag data
 ![uuvGtsam.py](/src/StateEstimator/uuvGtsam.py) | GTSAM state estimator script.
-uuvGtsamRosNode.py | Ros wrapper for GTSAM base code (uuvGtsam.py)
-plots.py | File to generate plots.
-errorAnalysis.py | Computes RMSE between the EKF, FGO, and dead reckoning against ground truth.
-commons.py | General helpful functions.
-transformations.py | File for frame transformations (e.g., quaternion, rotations, euler). Had trouble importing tf2_ros (probably because python 2.7), so generated hardcoded file.
+![uuvGtsamRosNode.py](/src/StateEstimator/uuvGtsamRosNode.py) | Ros wrapper for GTSAM base code (uuvGtsam.py)
+![plots.py](/src/StateEstimator/plots.py) | File to generate plots.
+![errorAnalysis.py](/src/StateEstimator/errorAnalysis.py) | Computes RMSE between the EKF, FGO, and dead reckoning against ground truth.
+![commons.py](/src/StateEstimator/commons.py) | General helpful functions.
+![transformations.py](/src/StateEstimator/transformations.py) | File for frame transformations (e.g., quaternion, rotations, euler). Had trouble importing tf2_ros (probably because python 2.7), so generated hardcoded file.
 
 
 ## EKF
