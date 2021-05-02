@@ -3,6 +3,9 @@
 *** WORK IN PROGRESS ***
 ## GTSAM
 
+### Graph formulation 
+![factorGraph](/Pictures/factorGraph.png)
+
 ### Sensors
 * DVL
 * barometer
@@ -31,7 +34,8 @@ processBag.launch | File to run gtsam core files on bag data
 ![errorAnalysis.py](/src/StateEstimator/errorAnalysis.py) | Computes RMSE between the EKF, FGO, and dead reckoning against ground truth.
 ![commons.py](/src/StateEstimator/commons.py) | General helpful functions.
 ![transformations.py](/src/StateEstimator/transformations.py) | File for frame transformations (e.g., quaternion, rotations, euler). Had trouble importing tf2_ros (probably because python 2.7), so generated hardcoded file.
-
+![PriorFactorPose3Z.h](/include/factors/PriorFactorPose3Z.h) | Barometer custom factor.
+![PriorFactorVel.h](/include/factors/PriorFactorVel.h) | DVL custom factor.
 
 ## EKF
 ### Position calculation
