@@ -109,13 +109,13 @@ class GtsamEstimator():
 		if buffer_time >= self.__opt_meas_buffer_time:
 			self.measurement_update(heapq.heappop(self.opt_meas))
 
-	def AddDvlMeasurement(self, time, velocity, b_velocity):
+	def AddDvlMeasurement(self, time, b_velocity):
 		""" Add DVL measurements 
 		Inputs
 			velocity: global frame velocity
 			b_velocity: body frame velocity
 		"""
-		heapq.heappush(self.opt_meas, (time, 'dvl', velocity, b_velocity))
+		heapq.heappush(self.opt_meas, (time, 'dvl', b_velocity))
 		buffer_time = heapq.nlargest(1, self.opt_meas)[0][0] - heapq.nsmallest(1, self.opt_meas)[0][0]
 		if buffer_time >= self.__opt_meas_buffer_time:
 			self.measurement_update(heapq.heappop(self.opt_meas))
@@ -151,13 +151,13 @@ class GtsamEstimator():
 			else:
 				break
 		if len(imu_samples) < self.min_imu_sample:
-			# Must have (at least 2) new IMU measurements since last measurement update
+			# Must have (minimum 2) new IMU measurements since last measurement update
 			# If not, put samples back and ignore this measurement
 			for sample in imu_samples:
 				heapq.heappush(self.imu_opt_meas, sample)
 			print("Ignoring measurement at: {}".format(meas_time))
 			return
-		# Update pose, velocity, and bias keys
+		# Update keys
 		self.poseKey += 1
 		self.velKey += 1
 		self.biasKey += 1
@@ -171,8 +171,7 @@ class GtsamEstimator():
 			self.new_factors.add(bar_factor)
 		# Add dvl velocity factor
 		elif meas_type == 'dvl':
-			dvl_vel = measurement[2]
-			b_dvl_vel = measurement[3]
+			b_dvl_vel = measurement[2]
 			dvl_factor = gtsam.PriorFactorVel(
 				self.poseKey,
 				self.velKey,
@@ -194,7 +193,7 @@ class GtsamEstimator():
 		if self.current_time > self.last_opt_time: # when new optimized pose is available
 			# store state at measurement time
 			self.last_opt_time = self.current_time
-			# start new integration onwards from optimization time
+			# reset integration
 			self.imu_accum.resetIntegration()
 			#print("Old IMU, New IMU, opt: {}, {}, {}".format(imu_samples[0][0], imu_samples[-1][0], last_opt_time))
 			new_imu_samples = []

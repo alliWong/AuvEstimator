@@ -33,7 +33,7 @@ class GtsamEstRosNode():
 		self.gt_topic = rospy.get_param('~gt_topic', "/rexrov2/pose_gt") # GT messages
 		self.dr_topic = rospy.get_param('~dr_topic', "/dr/pose") # DR messages
 		self.ekf_topic = rospy.get_param('~ekf_topic', "/est/state") # EKF estimator messages
-		self.imu_topic = rospy.get_param('~imu_topic', "/rexrov2/imu") # IMU messages 
+		self.imu_topic = rospy.get_param('~imu_topic', "/rexrov2/imu") # IMU messages
 		self.depth_topic = rospy.get_param('~depth_topic', "/bar/depth") # processed barometer to depth messages
 		self.dvl_topic = rospy.get_param('~dvl_topic', "/rexrov2/dvl") # DVL messages
 		# DVL parameters
@@ -98,17 +98,18 @@ class GtsamEstRosNode():
 
 		""" Variables """
 		# time variables
-		self.is_initialized = False # enable/disable GTSAM fusion  
-		self.imu_last_update_time = None # enable/disable GTSAM fusion  
-		self.bar_last_update_time = None # IMU time since last update 
-		self.dvl_last_update_time = None # DVL time since last update 
-		self.dr_last_update_time = None # DR time since last update 
-		self.ekf_last_update_time = None # EKF time since last update 
+		self.is_initialized = False # enable/disable GTSAM fusion
+		self.imu_last_update_time = None # enable/disable GTSAM fusion
+		self.bar_last_update_time = None # IMU time since last update
+		self.dvl_last_update_time = None # DVL time since last update
+		self.dr_last_update_time = None # DR time since last update
+		self.ekf_last_update_time = None # EKF time since last update
 		# pose variables
 		self.last_rbt_pose = None # last robot pose in map frame
 		self.gt_pose = None # GT pose message
 		self.ekf_pose = None # EKF pose message
 		self.dr_pose = None # DR pose message
+		self.fgo_pose = None # FGO pose message
 
 		""" Analysis/Processing variables """
 		# Plotting variables
@@ -120,7 +121,7 @@ class GtsamEstRosNode():
 			elif self.use_dvl and self.use_bar:
 				self.fusion_items = "DVL + BAR + IMU"
 			self.plot_data = {'IMU': [], 'GT': [], 'BAR': [], 'DVL': [], 'DR': [], 'EKF': [], self.fusion_items: []}
-		
+
 		# Error analysis variables
 		if self.compute_error:
 			self.error_results = {'dr': [], 'dr_gt': [], 'dr_bar': [], 'ekfEst': [], 'ekf_gt': [], 'ekf_bar': [], 'fgo': [], 'fgo_gt': []}
@@ -132,6 +133,7 @@ class GtsamEstRosNode():
 		self.sen_dvl_enuFramePitch = np.deg2rad(0) # -90
 		self.sen_dvl_enuFrameYaw = np.deg2rad(0)
 		self.frameTrans = Rot(self.sen_dvl_enuFrameRoll, self.sen_dvl_enuFramePitch, self.sen_dvl_enuFrameYaw) # compute for the corresponding rotation matrix
+		self.dvl_offsetTransRbtLinVel = np.zeros(shape=(3,3)) # dvl frame transformation considering dvl linear position offset wrt IMU
 
 		""" GTSAM ROS Wrapper """
 		self.gtsam_fusion = uuvGtsam.GtsamEstimator(params) # initialize GTSAM fusion
@@ -139,16 +141,16 @@ class GtsamEstRosNode():
 
 	def RunGtsam(self):
 		""" Run GTSAM """
-		# Run GTSAM using rosbag API
-		if self.bag_file_path: # initialize rosbag path API if there is user input value
-			rospy.loginfo("Processing file using rosbag API: {}. Please wait..".format(self.bag_file_path))
+		# Run GTSAM using rosbag
+		if self.bag_file_path: # initialize rosbag path if there is user input value
+			rospy.loginfo("Processing file using rosbag: {}. Please wait..".format(self.bag_file_path))
 			if self.bag_secs_to_skip > 0: # skips "x" seconds in the beginning of bag file if there is user input value
-				rospy.loginfo("Skipping {} seconds from the start of the bag file.".format(self.bag_secs_to_skip))
+				rospy.loginfo("Skipping {} seconds from the start of rosbag.".format(self.bag_secs_to_skip))
 			bag = rosbag.Bag(self.bag_file_path) # set rosbag variable
 			total_time_secs = int(bag.get_end_time() - bag.get_start_time()) # compute total time of rosbag [s]
 			init_t = None # set intial time
 			last_info_time_secs = int(bag.get_start_time()) # update last time
-			for topic, msg, t in bag.read_messages(topics=[self.gt_topic, self.dr_topic, self.ekf_topic, self.imu_topic, self.depth_topic, self.dvl_topic]): 
+			for topic, msg, t in bag.read_messages(topics=[self.gt_topic, self.dr_topic, self.ekf_topic, self.imu_topic, self.depth_topic, self.dvl_topic]):
 				if not init_t:
 					init_t = t
 					continue
@@ -183,9 +185,9 @@ class GtsamEstRosNode():
 					os.makedirs(self.save_dir)
 				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl)
 		# Run GTSAM using ROS subscribers (real time)
-		else: 
+		else:
 			# Subscribers
-			self.sub_dvl = rospy.Subscriber(self.dvl_topic, DVL, self.DvlCallback) # DVL 
+			self.sub_dvl = rospy.Subscriber(self.dvl_topic, DVL, self.DvlCallback) # DVL
 			self.sub_imu = rospy.Subscriber(self.imu_topic, Imu, self.ImuCallback) # IMU
 			self.sub_depth = rospy.Subscriber(self.depth_topic, Odometry, self.BarCallback) # depth
 			rospy.spin()
@@ -193,7 +195,22 @@ class GtsamEstRosNode():
 	def ImuCallback(self, msg):
 		""" IMU Callback messages """
 		if self.imu_last_update_time:
-			# sensor measurements
+
+			# Note: Raw imu angular position measurements is computed solely for the purpose of graphing
+			# 		raw dvl sensor measurements in navigation frame. Angular position is not being
+			# 		used in the factor graph.
+			#		Input IMU data is in rotation matrix form.
+			euler = euler_from_quaternion([msg.orientation.x,
+										msg.orientation.y,
+										msg.orientation.z,
+										msg.orientation.w]) # Convert IMU data from quarternion to euler
+			unwrapEuler = np.unwrap(euler) # unwrap euler angles
+			imu_mapEulAng = np.array([[unwrapEuler[0]],
+									[unwrapEuler[1]],
+									[unwrapEuler[2]]]) # imu angular position array
+			self.imu_mapAngPos = Rot(imu_mapEulAng[0], imu_mapEulAng[1], imu_mapEulAng[2])
+
+			# Sensor measurements
 			self.lin_acc = np.array([
 				msg.linear_acceleration.x,
 				msg.linear_acceleration.y,
@@ -204,21 +221,6 @@ class GtsamEstRosNode():
 				msg.angular_velocity.y,
 				msg.angular_velocity.z
 			])
-
-			#############################################################################
-			# Setup map orientation array
-			euler = euler_from_quaternion([msg.orientation.x,
-										msg.orientation.y,
-										msg.orientation.z,
-										msg.orientation.w]) # Convert IMU data from quarternion to euler
-			unwrapEuler = np.unwrap(euler) # unwrap euler angles
-			imu_mapEulAng = np.array([[unwrapEuler[0]],
-									[unwrapEuler[1]],
-									[unwrapEuler[2]]]) # imu angular position array
-			### NOTES: Incoming IMU data is in rotation matrix form  ###
-			self.imu_mapAngPos = Rot(imu_mapEulAng[0], imu_mapEulAng[1], imu_mapEulAng[2])
-			#############################################################################
-
 			dt = msg.header.stamp.to_sec() - self.imu_last_update_time
 			if self.fixed_dt:
 				dt = self.fixed_dt
@@ -243,6 +245,16 @@ class GtsamEstRosNode():
 				# store output
 				self.plot_data[self.fusion_items].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), imu_pos, euler_imu_ori, vel, acc_bias, gyr_bias), axis=0))
+
+			# data for error analysis
+			if self.compute_error:
+				# grab estimator pose
+				self.error_results['fgo'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+				# grab estimator pose when ground truth is updated
+				self.error_results['fgo_gt'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+
 
 		self.imu_last_update_time = msg.header.stamp.to_sec()
 
@@ -276,23 +288,20 @@ class GtsamEstRosNode():
 			dvl_vel = np.array([msg.velocity.x,
 								msg.velocity.y,
 								msg.velocity.z])
-
-			#############################################################################
-			# Setup dvl offset array
+			# dvl offset array
 			dvl_offset = array([self.sen_dvl_offsetX,
 								self.sen_dvl_offsetY,
 								self.sen_dvl_offsetZ])
-
-			# Correct DVL coordinate frame wrt to ENU
+			# static frame transformation of DVL wrt IMU
 			dvl_enuTransRbtLinVel = np.matmul(self.frameTrans, dvl_vel.T)
-			# dvl_enuTransRbtLinVel -= np.cross(self.ang_vel.T, dvl_offset).T
-			# Convert velocity from robot frame into map frame
-			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, dvl_enuTransRbtLinVel).T
-			#############################################################################
+			# frame transformation considering dvl linear position offset wrt IMU
+			self.dvl_offsetTransRbtLinVel = dvl_enuTransRbtLinVel - np.cross(self.ang_vel.T, dvl_offset).T
+			# Convert velocity from robot frame into navigation frame (used for plotting purposes only)
+			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, self.dvl_offsetTransRbtLinVel).T
 
 			# add measurements to factor graph
 			if self.use_dvl:
-				self.gtsam_fusion.AddDvlMeasurement(self.dvl_last_update_time, self.sen_dvl_mapLinVel, dvl_enuTransRbtLinVel)
+				self.gtsam_fusion.AddDvlMeasurement(self.dvl_last_update_time, dvl_enuTransRbtLinVel)
 			if not self.use_dvl:
 				return
 
@@ -325,15 +334,6 @@ class GtsamEstRosNode():
 				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 		if not self.use_gt:
 			return
-			
-		# data for error analysis
-		if self.compute_error:
-			# grab estimator pose
-			self.error_results['fgo'].append(
-				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
-			# grab estimator pose when ground truth is updated
-			self.error_results['fgo_gt'].append(
-				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 
 	def DrCallback(self, msg):
 		""" DR Callback messages """
