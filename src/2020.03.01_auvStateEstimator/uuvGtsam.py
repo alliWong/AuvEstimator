@@ -173,7 +173,7 @@ class GtsamEstimator():
 		elif meas_type == 'dvl':
 			dvl_vel = measurement[2]
 			b_dvl_vel = measurement[3]
-			dvl_factor = gtsam.PriorFactorVelTest2(
+			dvl_factor = gtsam.PriorFactorVel(
 				self.poseKey,
 				self.velKey,
 				b_dvl_vel,
