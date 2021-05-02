@@ -4,7 +4,7 @@
 ## GTSAM
 
 ### Graph formulation 
-![factorGraph](/Pictures/factorGraph.png)
+![factorGraph](/Pictures/Archive/factorGraph.png)
 
 ### Sensors
 * DVL
