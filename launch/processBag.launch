@@ -20,7 +20,7 @@
 
     <param name="use_gt" value="true" />
     <param name="use_dr" value="true" />
-    <param name="use_ekf" value="true" />
+    <param name="use_ekf" value="false" />
     <param name="use_fgo" value="false" />
 
     <param name="use_bar" value="true" />

@@ -50,9 +50,9 @@ public:
     gtsam::Vector3 vec_b = w_R_b.unrotate(v, Hvel__rot, H2); // transform world frame velocity into body frame
     if (H1) *H1 = Hvel__rot * Hrot__pose; // derr/dx
 
-    std::cout << "\n*****VELOCITY FACTOR EVAL*****" << std::endl;
-    std::cout << "POSE: \n" << p << std::endl;
-    std::cout << "VEL: \n" << v << std::endl;
+    // std::cout << "\n*****VELOCITY FACTOR EVAL*****" << std::endl;
+    // std::cout << "POSE: \n" << p << std::endl;
+    // std::cout << "VEL: \n" << v << std::endl;
 
     // return error vector
     return (gtsam::Vector3() << vec_b - b_velocity_).finished(); // return velocity error
