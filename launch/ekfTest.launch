@@ -8,7 +8,7 @@
 
 
    <!-- Read data -->
-   <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/allison/RosBags/CurvedTrajectory.bag">
+   <node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/allison/RosBags/Test2.bag">
    </node>
 
 
@@ -26,11 +26,16 @@
 	<param name ="depthTopic" value="/bar/depth"/>
 	<param name ="useEnu" value="1"/>
 
-	<param name ="est_dt" value="0.018" />
+	<param name ="est_dt" value="0.017" />
+
+	<param name ="dvl_offsetX" value="0.0"/>
+	<param name ="dvl_offsetY" value="0.0"/>
+	<param name ="dvl_offsetZ" value="0.0"/>
+<!--
 	<param name ="dvl_offsetX" value="0.3"/>
 	<param name ="dvl_offsetY" value="0.5"/>
 	<param name ="dvl_offsetZ" value="-0.68"/>
-
+-->
 	<param name ="imu_rbtAccBiasX" value="0"/>
 	<param name ="imu_rbtAccBiasY" value="0"/>
 	<param name ="imu_rbtAccBiasZ" value="0"/>
@@ -42,14 +47,14 @@
 	<param name ="est_useImuLinPos" value="1"/>
 
 	<param name ="est_R_linPos" value="0" />
-	<param name ="est_R_linPosZ" value="2" />
-	<param name ="est_R_angPos" value="6" /> 
+	<param name ="est_R_linPosZ" value="0.2" />
+	<param name ="est_R_angPos" value="300" /> 
 	<param name ="est_R_linVel" value="0.001" />
-	<param name ="est_R_acBias" value="0.00004" />
-	<param name ="est_R_gyBias" value="0.0007" />
+	<param name ="est_R_acBias" value="0.0004" />
+	<param name ="est_R_gyBias" value="0.0025" />
 
 	<param name ="est_Q_linPos" value="10000"/>
-	<param name ="est_Q_angPos" value="100" />
+	<param name ="est_Q_angPos" value="10000" />
 	<param name ="est_Q_linVel" value="10" />
 	<param name ="est_Q_acBias" value="10" />
 	<param name ="est_Q_gyBias" value="10" />
@@ -61,9 +66,14 @@
 	<param name ="dvlTopic" value="/rexrov2/dvl"/>
 	<param name ="imuTopic" value="/rexrov2/imu"/>
 	<param name ="useEnu" value="1"/>
+	<param name ="dvl_offsetX" value="0.0"/>
+	<param name ="dvl_offsetY" value="0.0"/>
+	<param name ="dvl_offsetZ" value="0.0"/>
+<!--
 	<param name ="dvl_offsetX" value="0.3"/>
 	<param name ="dvl_offsetY" value="0.5"/>
 	<param name ="dvl_offsetZ" value="-0.68"/>
+-->
    </node>
 
 

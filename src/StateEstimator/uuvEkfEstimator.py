@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # """
-# The purpose of this file is to estimate the state of the vehicle with EKF 
+# The purpose of this file is to estimate the state of the vehicle with EKF
 # using DVL, IMU, and barometer
 # """
 
@@ -17,7 +17,7 @@ from commons import EuclideanDistance, SkewSymmetric, Rot, TrapIntegrate, MapAng
 class EkfEstimator(object):
   def __init__(self, dt, enuFrame, pseudoLinPos):
     """ Initial Parameters """
-    self.est_dt = dt 
+    self.est_dt = dt
     self.enuFrame = enuFrame # frame flag (1 to set ENU, 0 to set NED)
     # Decide which sensor to calculate pseudo position estimate
     if pseudoLinPos == 0:
@@ -29,11 +29,11 @@ class EkfEstimator(object):
       self.est_useImuLinPos = 1
 
     """ Sensor setup """
-    # Instantiate DVL variables and arrays 
+    # Instantiate DVL variables and arrays
     self.sen_dvl_update = 0 # dvl update flag (0 to set 0, 1 to set 1)
     self.sen_dvl_time = 0 # current dvl sensor time
     self.sen_dvl_previousTime = 0 # last time since dvl updated
-    self.sen_dvl_rbtLinVel = zeros(shape=(3,1)) # robot frame linear velocity from dvl 
+    self.sen_dvl_rbtLinVel = zeros(shape=(3,1)) # robot frame linear velocity from dvl
     self.sen_dvl_mapLinVel = zeros(shape=(3,1)) # NED map frame linear velocity from dvl
     self.sen_dvl_aprxMapLinPos = zeros(shape=(3,1)) # map frame approximated linear position from dvl
     self.sen_dvl_offset = zeros(shape=(3,1)) # dvl physical offset from vehicle COM
@@ -47,10 +47,10 @@ class EkfEstimator(object):
     self.sen_imu_mapLinAcc = zeros(shape=(3,1)) # map frame linear acceleration from IMU
     self.sen_imu_mapLinAccNoGrav = zeros(shape=(3,1)) # map frame linear acceleration without gravity
     self.sen_imu_mapAngPos = zeros(shape=(3,3)) # orientation rotation matrix
-    self.sen_imu_mapEulAngPos = zeros(shape=(3,1)) # orientation euler angle matrix 
+    self.sen_imu_mapEulAngPos = zeros(shape=(3,1)) # orientation euler angle matrix
     self.sen_imu_mapAngVel = zeros(shape=(3,1)) # map frame angular velocity from IMU
-    self.sen_imu_aprxMapLinPos = zeros(shape=(3,1)) # map frame approximated linear position from integrated linear acceleration IMU 
-    self.sen_imu_aprxMapLinVel = zeros(shape=(3,1)) # map frame approximated linear velocity from integrated linear acceleration IMU 
+    self.sen_imu_aprxMapLinPos = zeros(shape=(3,1)) # map frame approximated linear position from integrated linear acceleration IMU
+    self.sen_imu_aprxMapLinVel = zeros(shape=(3,1)) # map frame approximated linear velocity from integrated linear acceleration IMU
     self.sen_imu_lastMapAprxLinVel = zeros(shape=(3,1)) # map frame approximated last linear velocity from integrated linear acceleration IMU
 
     # Instantiate Barometer variables and arrays
@@ -59,19 +59,13 @@ class EkfEstimator(object):
     self.sen_bar_mapLinPos = 0 # map frame barometer linear position
 
     # Sensor frame setup
-    # Configure DVL frame to ENU (x-forward, z-upwards)
+    # DVL rigid frame transformation wrt IMU
+    # DVL frame in ENU configuration(x-forward, z-upwards)
     self.sen_dvl_enuFrameRoll = np.deg2rad(0)
-    self.sen_dvl_enuFramePitch = np.deg2rad(90) # -90
+    self.sen_dvl_enuFramePitch = np.deg2rad(0) # -90
     self.sen_dvl_enuFrameYaw = np.deg2rad(0)
-    # Configure DVL frame to NED (x-forward, z-downwards)
-    self.sen_dvl_nedFrameRoll = np.deg2rad(0)
-    self.sen_dvl_nedFramePitch = np.deg2rad(90)
-    self.sen_dvl_nedFrameYaw = np.deg2rad(180)
-    # Configure IMU frame to NED (x-forward, z-downwards)
-    self.sen_imu_nedFrameRoll = np.deg2rad(180)
-    self.sen_imu_nedFramePitch = np.deg2rad(0)
-    self.sen_imu_nedFrameYaw = np.deg2rad(0)
-    self.frameTrans = Rot(self.sen_dvl_enuFrameRoll, self.sen_dvl_enuFramePitch, self.sen_dvl_enuFrameYaw)
+    self.frameTrans = Rot(self.sen_dvl_enuFrameRoll, self.sen_dvl_enuFramePitch, self.sen_dvl_enuFrameYaw) # compute for the corresponding rotation matrix
+    self.dvl_offsetTransRbtLinVel = np.zeros(shape=(3,3)) # dvl frame transformation considering dvl linear position offset wrt IMU
 
     """ Estimator setup """
     # Instantiate estimator measurement variables and arrays
@@ -80,7 +74,7 @@ class EkfEstimator(object):
     self.est_mapLinVel = zeros(shape=(3,1)) # map frame estimator linear velocity array
     self.est_mapPrevLinVel = zeros(shape=(3,1)) # previous map frame estimator linear velocity array
     self.est_mapAngPos = zeros(shape=(3,3)) # map frame angular position array
-    self.est_mapEulAngPos = zeros(shape=(3,1)) # orientation euler angle matrix 
+    self.est_mapEulAngPos = zeros(shape=(3,1)) # orientation euler angle matrix
     self.est_mapAngVel = zeros(shape=(3,1)) # map frame angular velocity array
     self.est_mapLinAcc = zeros(shape=(3,1)) # map frame linear acceleration
     self.est_mapPrevLinAcc = zeros(shape=(3,1)) # previous map frame linear acceleration
@@ -108,7 +102,7 @@ class EkfEstimator(object):
     self.est_Q = array([
       [np.power(est_Q_linPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, np.power(est_Q_linPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, np.power(est_Q_linPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+      [0, 0, np.power(est_Q_linPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, np.power(est_Q_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, np.power(est_Q_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, np.power(est_Q_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -120,11 +114,11 @@ class EkfEstimator(object):
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_Q_acBias,2), 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_Q_gyBias,2), 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_Q_gyBias,2), 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_Q_gyBias,2)]]) # process noise covariance matrix  
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_Q_gyBias,2)]]) # process noise covariance matrix
 
   def ComputeR(self, est_R_linPosZ, est_R_angPos, est_R_linVel, est_R_acBias, est_R_gyBias):
     self.est_R = array([
-      [np.power(est_R_linPosZ,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+      [np.power(est_R_linPosZ,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, np.power(est_R_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, np.power(est_R_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, np.power(est_R_angPos,2), 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -136,7 +130,7 @@ class EkfEstimator(object):
       [0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_R_acBias,2), 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_R_gyBias,2), 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_R_gyBias,2), 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_R_gyBias,2)]]) # measurement noise covariance matrix 
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.power(est_R_gyBias,2)]]) # measurement noise covariance matrix
 
   """ Raw sensor measurements """
   def DvlCallback(self, rbtLinVel, offset, t):
@@ -181,7 +175,7 @@ class EkfEstimator(object):
     self.sen_bar_update = 1
     self.sen_bar_time = t
 
-    # Raw measurements  
+    # Raw measurements
     self.sen_bar_mapLinPos = rbtLinPos # map linear position in z-direction
 
     # Perform time update
@@ -202,7 +196,7 @@ class EkfEstimator(object):
       self.sen_imu_mapAngVel = np.matmul(MapAngVelTrans(self.sen_imu_mapEulAngPos[0], self.sen_imu_mapEulAngPos[1], self.sen_imu_mapEulAngPos[2]), self.sen_imu_rbtAngVel)
 
       # DVL
-      # Correct DVL coordinate frame wrt to ENU 
+      # Correct DVL coordinate frame wrt to ENU
       dvl_enuTransRbtLinVel = np.matmul(self.frameTrans, self.sen_dvl_rbtLinVel)
       dvl_enuTransRbtLinVel -= np.cross(self.sen_imu_rbtAngVel.T, self.sen_dvl_offset.T).T
       # Convert velocity from robot frame into map frame
@@ -213,7 +207,7 @@ class EkfEstimator(object):
     # Update DVL sensor array if a sensor update occurs
     if self.sen_dvl_update == 1:
       # Set estimator last known sensor update to last known sensor update
-      self.sen_dvl_previousTime = self.sen_dvl_time 
+      self.sen_dvl_previousTime = self.sen_dvl_time
 
       # Update the linear velocity in map and robot frame measurement array
       self.est_mapLinVel = self.sen_dvl_mapLinVel
@@ -222,7 +216,7 @@ class EkfEstimator(object):
     # Update barometer sensor array if a sensor update occurs
     if self.sen_bar_update == 1:
       # Set estimator last known sensor update to last known sensor update
-      self.sen_bar_previousTime = self.sen_bar_time 
+      self.sen_bar_previousTime = self.sen_bar_time
 
       # Update the linear position (map frame) measurement array
       self.est_mapLinPos[2] = self.sen_bar_mapLinPos
@@ -230,7 +224,7 @@ class EkfEstimator(object):
     # Update IMU sensor array if a sensor update occurs
     if self.sen_imu_update == 1:
       # Set estimator last known sensor update to last known sensor update
-      self.sen_imu_previousTime = self.sen_imu_time 
+      self.sen_imu_previousTime = self.sen_imu_time
 
       # Update the linear acceleration in map and robot frame measurement array
       self.est_mapLinAcc = self.sen_imu_mapLinAcc
@@ -245,24 +239,24 @@ class EkfEstimator(object):
       self.est_rbtAngVel = self.sen_imu_rbtAngVel
 
       # Update the acceleration and gyro bias in robot frame measurement array
-      self.est_rbtAccBias = self.sen_imu_accBias 
+      self.est_rbtAccBias = self.sen_imu_accBias
       self.est_rbtGyrBias = self.sen_imu_gyrBias
 
   """ Compute for map frame linear position """
   def MapLinPos(self):
     # Use only DVL
-    if self.est_useDvlLinPos == 1 and self.est_useImuLinPos == 0:  
+    if self.est_useDvlLinPos == 1 and self.est_useImuLinPos == 0:
       # Integrate velocity using the trapezoidal method to compute for position
       self.est_mapLinPos[0:2] = TrapIntegrate(self.sen_dvl_time, self.est_mapLinVel[0:2], self.est_x[0:2], self.sen_dvl_previousTime, self.est_mapPrevLinVel[0:2])
 
     # Use only IMU
-    if self.est_useDvlLinPos == 0 and self.est_useImuLinPos == 1: 
+    if self.est_useDvlLinPos == 0 and self.est_useImuLinPos == 1:
       # Integrate acceleration using the trapezoidal method to compute for velocity
       self.sen_imu_aprxMapLinVel[0:2] = TrapIntegrate(self.sen_imu_time, self.est_mapLinAcc[0:2], self.est_x[6:8], self.sen_imu_previousTime, self.est_mapPrevLinAcc[0:2])
       self.est_mapLinPos[0:2] = TrapIntegrate(self.sen_imu_time, self.sen_imu_aprxMapLinVel[0:2], self.est_x[0:2], self.sen_imu_previousTime, self.sen_imu_lastMapAprxLinVel[0:2])
-    
+
     # Use both DVL and IMU
-    if self.est_useDvlLinPos == 1 and self.est_useImuLinPos == 1: 
+    if self.est_useDvlLinPos == 1 and self.est_useImuLinPos == 1:
       # Integrate velocity using the trapezoidal method to compute for position
       self.sen_dvl_aprxMapLinPos[0:2] = TrapIntegrate(self.sen_dvl_time, self.est_mapLinVel[0:2], self.est_x[0:2], self.sen_dvl_previousTime, self.est_mapPrevLinVel[0:2])
 
@@ -348,7 +342,7 @@ class EkfEstimator(object):
     self.est_A = array([
         [1, 0, 0, J1[0], J1[1], J1[2], Rzyx[0,0]*self.est_dt, Rzyx[0,1]*self.est_dt, Rzyx[0,2]*self.est_dt, 0, 0, 0, 0, 0, 0],
         [0, 1, 0, J2[0], J2[1], J2[2], Rzyx[1,0]*self.est_dt, Rzyx[1,1]*self.est_dt, Rzyx[1,2]*self.est_dt, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, J3[0], J3[1], J3[2], Rzyx[2,0]*self.est_dt, Rzyx[2,1]*self.est_dt, Rzyx[2,2]*self.est_dt, 0, 0, 0, 0, 0, 0], 
+        [0, 0, 1, J3[0], J3[1], J3[2], Rzyx[2,0]*self.est_dt, Rzyx[2,1]*self.est_dt, Rzyx[2,2]*self.est_dt, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, J4[0], J4[1], J4[2], 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, J5[0], J5[1], J5[2], 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, J6[0], J6[1], J6[2], 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -391,21 +385,21 @@ class EkfEstimator(object):
     # Rotation measurements
     self.est_m[3:6] = self.est_mapEulAngPos # angular position in map frame
 
-    # Linear velocity measurements           
-    self.est_m[6:9] = self.est_mapLinVel # linear velocity in map frame 
+    # Linear velocity measurements
+    self.est_m[6:9] = self.est_mapLinVel # linear velocity in map frame
 
-    # Linear acceleration bias measurements           
-    self.est_m[9:12] = self.est_rbtAccBias # linear accel bias in robot frame 
+    # Linear acceleration bias measurements
+    self.est_m[9:12] = self.est_rbtAccBias # linear accel bias in robot frame
 
-    # Gyroscope bias measurements           
-    self.est_m[12:15] = self.est_rbtGyrBias # linear gyro bias in robot frame 
+    # Gyroscope bias measurements
+    self.est_m[12:15] = self.est_rbtGyrBias # linear gyro bias in robot frame
 
-  """ Run Estimator """ 
+  """ Run Estimator """
   def RunEst(self):
     # Assign inputs
     self.est_u[0:3] = self.sen_imu_mapLinAcc # linear acceleration input
     self.est_u[3:6] = self.sen_imu_mapAngVel # gyroscope input
-    
+
     self.RbtToMap() # convert sensor measurements from robot frame into map frame
     self.SenMeasArrays() # collect sensor measurements
     self.MapLinPos() # compute map frame linear position
@@ -419,7 +413,7 @@ class EkfEstimator(object):
     R = self.est_R # measurement noise covariance
     H = self.est_H # measurement matrix
     z = self.est_m[2:15] # measurement
-    u = self.est_u # control input vector 
+    u = self.est_u # control input vector
     A = self.est_A # jacobian state matrix
     state = ExtendedKalmanFilter(xDim, x, P, z, u, A, Q, R, H)
     # Perform time update if condition is 0

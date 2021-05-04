@@ -37,8 +37,8 @@ class GtsamEstimator():
 		isam2_params.setRelinearizeThreshold(params['relinearize_th'])
 		isam2_params.setRelinearizeSkip(params['relinearize_skip'])
 		isam2_params.setFactorization(params['factorization'])
-		# self.isam2 = gtsam.ISAM2(isam2_params)
-		self.isam2 = gtsam.ISAM2()
+		self.isam2 = gtsam.ISAM2(isam2_params)
+		# self.isam2 = gtsam.ISAM2()
 		self.new_factors = gtsam.NonlinearFactorGraph()
 		self.new_initial_ests = gtsam.Values()
 		self.min_imu_sample = 2 # minimum imu sample count needed for integration

@@ -73,8 +73,8 @@ class GtsamEstRosNode():
 		params['factorization'] = rospy.get_param('~relinearize_skip', 'CHOLESKY')
 		# IMU preintegration parameters
 		params['g'] = rospy.get_param('~g', [0, 0, -9.81]) # gravity vector
-		params['acc_nd_sigma'] = rospy.get_param('~acc_nd_sigma', [18, 18, 18]) # accelerometer noise density [m/s^2]
-		params['gyro_nd_sigma'] = rospy.get_param('~gyro_nd_sigma', [6, 6, 6]) # gyroscope noise density [degrees/s]
+		params['acc_nd_sigma'] = rospy.get_param('~acc_nd_sigma', [20, 20, 20]) # accelerometer noise density [m/s^2]
+		params['gyro_nd_sigma'] = rospy.get_param('~gyro_nd_sigma', [300, 300, 300]) # gyroscope noise density [degrees/s]
 		params['int_cov_sigma'] = rospy.get_param('~int_cov_sigma', 0) # associated error when integrating velocities for position
 		params['setUse2ndOrderCoriolis'] = rospy.get_param('~setUse2ndOrderCoriolis', False) # set 2nd order Coriolis
 		params['omega_coriolis'] = rospy.get_param('~omega_coriolis', [0, 0, 0]) # set omega Coriolis
@@ -91,10 +91,10 @@ class GtsamEstRosNode():
 		params['init_acc_bias_cov'] = rospy.get_param('~init_acc_bias_cov', 1.0) # initial vehicle initial acceleration bias covariance [m/s^2]
 		params['init_gyr_bias_cov'] = rospy.get_param('~init_gyr_bias_cov', 0.1) # initial vehicle initial gyroscope bias covariance [degrees/s]
 		# measurement noise
-		params['dvl_cov'] = rospy.get_param('~dvl_cov', [0.5, 0.5, 0.5]) # dvl sensor measurement covariance [m/s]
-		params['bar_cov'] = rospy.get_param('~bar_cov', [0.5]) # barometer sensor measurement covariance [m]
-		params['sigma_acc_bias_evol'] = rospy.get_param('~sigma_acc_bias_evol', [4e-5, 4e-5, 4e-5]) # linear acceleration sensor measurement covariance [m/s^2]
-		params['sigma_gyr_bias_evol'] = rospy.get_param('~sigma_gyr_bias_evol', [7e-4, 7e-4, 7e-4]) # angular velocity sensor measurement covariance [degrees/s]
+		params['dvl_cov'] = rospy.get_param('~dvl_cov', [0.001, 0.001, 0.001]) # dvl sensor measurement covariance [m/s]
+		params['bar_cov'] = rospy.get_param('~bar_cov', [0.2]) # barometer sensor measurement covariance [m]
+		params['sigma_acc_bias_evol'] = rospy.get_param('~sigma_acc_bias_evol', [0.0004, 0.0004, 0.0004]) # linear acceleration sensor measurement covariance [m/s^2]
+		params['sigma_gyr_bias_evol'] = rospy.get_param('~sigma_gyr_bias_evol', [0.0025, 0.0025, 0.0025]) # angular velocity sensor measurement covariance [degrees/s]
 
 		""" Variables """
 		# time variables
@@ -183,7 +183,7 @@ class GtsamEstRosNode():
 				rospy.loginfo("Preparing plots. Please wait..")
 				if not os.path.exists(self.save_dir):
 					os.makedirs(self.save_dir)
-				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl)
+				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl, self.use_fgo)
 		# Run GTSAM using ROS subscribers (real time)
 		else:
 			# Subscribers
@@ -268,9 +268,9 @@ class GtsamEstRosNode():
 			self.depth = np.array([msg.pose.pose.position.z])
 
 			# add measurements to factor graph
-			if self.use_bar:
+			if self.use_bar and self.use_fgo:
 				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, self.depth)
-			if not self.use_bar:
+			if not self.use_bar and self.use_fgo:
 				return
 
 			# data for plots
@@ -300,9 +300,9 @@ class GtsamEstRosNode():
 			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, self.dvl_offsetTransRbtLinVel).T
 
 			# add measurements to factor graph
-			if self.use_dvl:
+			if self.use_dvl and self.use_fgo:
 				self.gtsam_fusion.AddDvlMeasurement(self.dvl_last_update_time, dvl_enuTransRbtLinVel)
-			if not self.use_dvl:
+			if not self.use_dvl and self.use_fgo:
 				return
 
 			# data for plots

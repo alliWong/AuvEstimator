@@ -3,7 +3,7 @@
   
    <!-- GTSAM fusion combining IMU and 6DOF pose -->
   <node name="GtsamEst" pkg="auv_estimator" type="uuvGtsamRosNode.py" output="screen" required="true">
-    <param name="bag_file_path" value="/home/allison/RosBags/Test2.bag" />
+    <param name="bag_file_path" value="/home/allison/RosBags/ProcessedTest2.bag" />
     <param name="gt_topic" value="/rexrov2/pose_gt" />
     <param name="dr_topic" value="/dr/pose" />
     <param name="ekf_topic" value="/est/state" />>
@@ -11,17 +11,18 @@
     <param name="bar_topic" value="/bar/depth" />
     <param name="dvl_topic" value="/rexrov2/dvl" />
 
-    <param name ="dvl_offsetX" value="0.3"/>
+    <param name ="dvl_offsetX" value="0.0"/>
     <param name ="dvl_offsetY" value="0.5"/>
     <param name ="dvl_offsetZ" value="-0.68"/>
 
     <param name="bar_interval" value="0.5" />
-    <param name="dvl_interval" value="1"/>
+    <param name="dvl_interval" value="1.1"/>
 
     <param name="use_gt" value="true" />
     <param name="use_dr" value="true" />
     <param name="use_ekf" value="true" />
-    <param name="use_fgo" value="true" />
+    <param name="use_fgo" value="false" />
+
     <param name="use_bar" value="true" />
     <param name="use_dvl" value="true" />
 
