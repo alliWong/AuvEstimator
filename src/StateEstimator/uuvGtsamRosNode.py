@@ -106,6 +106,7 @@ class GtsamEstRosNode():
 		self.ekf_last_update_time = None # EKF time since last update
 		# pose variables
 		self.last_rbt_pose = None # last robot pose in map frame
+		self.fgo_pose = None # FGO pose message
 		self.gt_pose = None # GT pose message
 		self.ekf_pose = None # EKF pose message
 		self.dr_pose = None # DR pose message
@@ -334,6 +335,18 @@ class GtsamEstRosNode():
 				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 		if not self.use_gt:
 			return
+<<<<<<< HEAD:src/StateEstimator/uuvGtsamRosNode.py
+=======
+			
+		# # data for error analysis
+		# if self.compute_error:
+		# 	# grab estimator pose
+		# 	self.error_results['fgo'].append(
+		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+		# 	# grab estimator pose when ground truth is updated
+		# 	self.error_results['fgo_gt'].append(
+		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+>>>>>>> origin:src/2020.03.01_auvStateEstimator/uuvGtsamRosNode.py
 
 	def DrCallback(self, msg):
 		""" DR Callback messages """
