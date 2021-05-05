@@ -2,6 +2,11 @@
 
 import numpy as np
 from commons import PressureToDepth
+import gtsam
+import gtsam_example
+
+g = gtsam_example.Greeting()
+g.sayHello()
 
 # ################################################################
 # Rot = np.array([[-0.835035, 0.501546, -0.226206],
@@ -45,11 +50,3 @@ from commons import PressureToDepth
 # print('err\n', b_vel-b_vel_vec)
 
 
-
-#################################################################
-
-Bar = 15000/1000
-offset = 0
-result = PressureToDepth(Bar, offset)
-print(result)
-#################################################################

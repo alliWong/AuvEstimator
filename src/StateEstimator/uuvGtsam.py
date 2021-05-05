@@ -11,6 +11,8 @@ import time
 import numpy as np
 from commons import *
 from collections import deque
+from gtsam.symbol_shorthand import B, V, X
+
 
 class GtsamEstimator():
 	""" ISAM2 Fusion"""
@@ -43,9 +45,9 @@ class GtsamEstimator():
 		self.new_initial_ests = gtsam.Values()
 		self.min_imu_sample = 2 # minimum imu sample count needed for integration
 		# ISAM2 keys
-		self.poseKey = gtsam.symbol(ord('x'), 0)
-		self.velKey = gtsam.symbol(ord('v'), 0)
-		self.biasKey = gtsam.symbol(ord('b'), 0)
+		self.poseKey = X(0)
+		self.velKey = V(0)
+		self.biasKey = B(0)
 
 		""" Set initial variables """
 		# Initial state
@@ -55,25 +57,25 @@ class GtsamEstimator():
 			params['init_ori'])
 		self.current_global_vel = np.asarray(
 			params['init_vel'])
-		self.current_bias = gtsam.imuBias_ConstantBias(
+		self.current_bias = gtsam.imuBias.ConstantBias(
 			np.asarray(params['init_acc_bias']),
 			np.asarray(params['init_gyr_bias']))
 		self.imu_accum = gtsam.PreintegratedImuMeasurements(self.imu_preint_params)
 		# uncertainty of the initial state
-		self.init_pos_cov = gtsam.noiseModel_Isotropic.Sigmas(np.array([
+		self.init_pos_cov = gtsam.noiseModel.Isotropic.Sigmas(np.array([
 			params['init_ori_cov'], params['init_ori_cov'], params['init_ori_cov'],
 			params['init_pos_cov'], params['init_pos_cov'], params['init_pos_cov']]))
-		self.init_vel_cov = gtsam.noiseModel_Isotropic.Sigmas(np.array([
+		self.init_vel_cov = gtsam.noiseModel.Isotropic.Sigmas(np.array([
 			params['init_vel_cov'], params['init_vel_cov'], params['init_vel_cov']]))
-		self.init_bias_cov = gtsam.noiseModel_Isotropic.Sigmas(np.array([
+		self.init_bias_cov = gtsam.noiseModel.Isotropic.Sigmas(np.array([
 			params['init_acc_bias_cov'], params['init_acc_bias_cov'], params['init_acc_bias_cov'],
 			params['init_gyr_bias_cov'], params['init_gyr_bias_cov'], params['init_gyr_bias_cov']]))
 		# measurement noise
-		self.dvl_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(
+		self.dvl_cov = gtsam.noiseModel.Isotropic.Sigmas(np.asarray(
 			params['dvl_cov']))
-		self.bar_cov = gtsam.noiseModel_Isotropic.Sigmas(np.asarray(
+		self.bar_cov = gtsam.noiseModel.Isotropic.Sigmas(np.asarray(
 			params['bar_cov']))
-		self.bias_cov = gtsam.noiseModel_Isotropic.Sigmas(np.concatenate((
+		self.bias_cov = gtsam.noiseModel.Isotropic.Sigmas(np.concatenate((
 			params['sigma_acc_bias_evol'],
 			params['sigma_gyr_bias_evol'])))
 
@@ -241,7 +243,7 @@ class GtsamEstimator():
 		self.new_initial_ests.insert(self.biasKey, self.current_bias)
 		# Add IMU bias factor
 		bias_factor = gtsam.BetweenFactorConstantBias(
-			self.biasKey-1, self.biasKey, gtsam.imuBias_ConstantBias(), self.bias_cov)
+			self.biasKey-1, self.biasKey, gtsam.imuBias.ConstantBias(), self.bias_cov)
 		self.new_factors.add(bias_factor)
 		# Compute result
 		result = self.Isam2Update()
@@ -249,7 +251,7 @@ class GtsamEstimator():
 			self.current_time = meas_time
 			self.current_global_pose = result.atPose3(self.poseKey)
 			self.current_global_vel = result.atVector(self.velKey)
-			self.current_bias = result.atimuBias_ConstantBias(self.biasKey)
+			self.current_bias = result.atimuBias.ConstantBias(self.biasKey)
 
 	def Isam2Update(self):
 		"""ISAM2 update and pose estimation"""
