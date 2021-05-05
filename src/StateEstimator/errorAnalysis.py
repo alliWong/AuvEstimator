@@ -147,7 +147,6 @@ def compute_results_error(data, use_fgo, use_gt, use_dr, use_ekf, use_depth):
 			est_gt_vz = (sample_array[:, 0] - min_time, sample_array[:, 9])
 
 	""" Error Analysis """
-<<<<<<< HEAD:src/StateEstimator/errorAnalysis.py
 	if use_dr:	
 		### DR ###
 		# 1) Calculate DR distance RMSE
@@ -235,92 +234,6 @@ def compute_results_error(data, use_fgo, use_gt, use_dr, use_ekf, use_depth):
 		# # print Error change
 		# errorChange = ((absErrorMeanDrMapXY-absErrorMeanFgoMapXY)/absErrorMeanDrMapXY)*100
 		# print('DrToFgoMeanErrorChange', errorChange)
-=======
-	# ### DR ###
-	# # 1) Calculate DR distance RMSE
-	# errorVecDrMapX = np.abs(dr_x - dr_gt_x)
-	# errorVecDrMapY = np.abs(dr_y - dr_gt_y)
-	# absMeanErrorDrMapX = np.mean(errorVecDrMapX)
-	# absMeanErrorDrMapY = np.mean(errorVecDrMapY)
-	# absErrorMeanDrMapXY = np.sqrt(absMeanErrorDrMapX**2 + absMeanErrorDrMapY**2)
-	# # 2) Calculate DR std
-	# absMeanErrorStdDrMapX = np.std(errorVecDrMapX)
-	# absMeanErrorStdDrMapY = np.std(errorVecDrMapY)
-	# absErrorMeanStdDrMapXY = np.sqrt(absMeanErrorStdDrMapX**2 + absMeanErrorStdDrMapY**2)
-	# # 3) Calculate DR rotations RMSE
-	# errorVecDrRoll = np.abs((dr_roll - dr_gt_roll)**2)
-	# errorVecDrMapPitch = np.abs((dr_pitch - dr_gt_pitch)**2)
-	# errorVecDrMapYaw = np.abs((dr_yaw - dr_gt_yaw)**2)
-	# absMeanErrorDrRoll = np.mean(errorVecDrRoll)
-	# absMeanErrorDrPitch = np.mean(errorVecDrMapPitch)
-	# absMeanErrorDrYaw = np.mean(errorVecDrMapYaw)
-	# # 4) Calculate DR std
-	# absMeanErrorStdDrMapX = np.std(errorVecDrMapX)
-	# absMeanErrorStdDrMapY = np.std(errorVecDrMapY)
-	# absErrorMeanStdDrMapXY = np.sqrt(absMeanErrorStdDrMapX**2 + absMeanErrorStdDrMapY**2)
-	# # 5) Print results
-	# print('absErrorMeanDrMapXY', absErrorMeanDrMapXY)
-	# print('absErrorMeanStdDrMapXY', absErrorMeanStdDrMapXY)
-	# print('absMeanErrorDrRoll', absMeanErrorDrRoll)
-	# print('absMeanErrorDrPitch', absMeanErrorDrPitch)
-	# print('absMeanErrorDrYaw', absMeanErrorDrYaw)
-
-	# ### EKF ###
-	# # 1) Calculate EKF distance RMSE
-	# errorVecEkfMapX = np.abs(ekf_x - ekf_gt_x)
-	# errorVecEkfMapY = np.abs(ekf_y - ekf_gt_y)
-	# absMeanErrorEkfMapX = np.mean(errorVecEkfMapX)
-	# absMeanErrorEkfMapY = np.mean(errorVecEkfMapY)
-	# absErrorMeanEkfMapXY = np.sqrt(absMeanErrorEkfMapX**2 + absMeanErrorEkfMapY**2)
-	# # 2) Calculate EKF std
-	# absMeanErrorStdEkfMapX = np.std(errorVecEkfMapX)
-	# absMeanErrorStdEkfMapY = np.std(errorVecEkfMapY)
-	# absErrorMeanStdEkfMapXY = np.sqrt(absMeanErrorStdEkfMapX**2 + absMeanErrorStdEkfMapY**2)
-	# # 3) Calculate EKF rotations RMSE
-	# errorVecEkfRoll = np.abs((ekf_roll - ekf_gt_roll)**2)
-	# errorVecEkfMapPitch = np.abs((ekf_pitch - ekf_gt_pitch)**2)
-	# errorVecEkfMapYaw = np.abs((ekf_yaw - ekf_gt_yaw)**2)
-	# absMeanErrorEkfRoll = np.mean(errorVecEkfRoll)
-	# absMeanErrorEkfPitch = np.mean(errorVecEkfMapPitch)
-	# absMeanErrorEkfYaw = np.mean(errorVecEkfMapYaw)
-	# # Print results
-	# print('absErrorMeanEkfMapXY', absErrorMeanEkfMapXY)
-	# print('absErrorMeanStdEkfMapXY', absErrorMeanStdEkfMapXY)
-	# print('absMeanErrorEkfRoll', absMeanErrorEkfRoll)
-	# print('absMeanErrorEkfPitch', absMeanErrorEkfPitch)
-	# print('absMeanErrorEkfYaw', absMeanErrorEkfYaw)
-	# # print Error change
-	# errorChange =((absErrorMeanDrMapXY-absErrorMeanEkfMapXY)/absErrorMeanDrMapXY)*100
-	# print('DrToEstMeanErrorChange', errorChange)
-
-	### FGO ###
-	# 1) Calculate FGO distance RMSE
-	errorVecFgoMapX = np.abs(fgo_x - fgo_gt_x)
-	errorVecFgoMapY = np.abs(fgo_y - fgo_gt_y)
-	absMeanErrorFgoMapX = np.mean(errorVecFgoMapX)
-	absMeanErrorFgoMapY = np.mean(errorVecFgoMapY)
-	absErrorMeanFgoMapXY = np.sqrt(absMeanErrorFgoMapX**2 + absMeanErrorFgoMapY**2)
-	# 2) Calculate FGO std
-	absMeanErrorStdFgoMapX = np.std(errorVecFgoMapX)
-	absMeanErrorStdFgoMapY = np.std(errorVecFgoMapY)
-	absErrorMeanStdFgoMapXY = np.sqrt(absMeanErrorStdFgoMapX**2 + absMeanErrorStdFgoMapY**2)
-	# 3) Calculate FGO rotations RMSE
-	errorVecFgoRoll = np.abs((fgo_roll - fgo_gt_roll)**2)
-	errorVecFgoMapPitch = np.abs((fgo_pitch - fgo_gt_pitch)**2)
-	errorVecFgoMapYaw = np.abs((fgo_yaw - fgo_gt_yaw)**2)
-	absMeanErrorFgoRoll = np.mean(errorVecFgoRoll)
-	absMeanErrorFgoPitch = np.mean(errorVecFgoMapPitch)
-	absMeanErrorFgoYaw = np.mean(errorVecFgoMapYaw)
-	# Print results
-	print('absErrorMeanFgoMapXY', absErrorMeanFgoMapXY)
-	print('absErrorMeanStdEkfMapXY', absErrorMeanStdFgoMapXY)
-	print('absMeanErrorFgoRoll', absMeanErrorFgoRoll)
-	print('absMeanErrorFgoPitch', absMeanErrorFgoPitch)
-	print('absMeanErrorFgoYaw', absMeanErrorFgoYaw)
-	# Print Error change
-	# errorChange = ((absErrorMeanDrMapXY-absErrorMeanFgoMapXY)/absErrorMeanDrMapXY)*100
-	# print('DrToFgoMeanErrorChange', errorChange)
->>>>>>> origin:src/2020.03.01_auvStateEstimator/errorAnalysis.py
 
 
 	# ### DR ###

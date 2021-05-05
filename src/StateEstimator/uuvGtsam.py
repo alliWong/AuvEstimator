@@ -171,12 +171,7 @@ class GtsamEstimator():
 			self.new_factors.add(bar_factor)
 		# Add dvl velocity factor
 		elif meas_type == 'dvl':
-<<<<<<< HEAD:src/StateEstimator/uuvGtsam.py
 			b_dvl_vel = measurement[2]
-=======
-			dvl_vel = measurement[2]
-			b_dvl_vel = measurement[3]
->>>>>>> origin:src/2020.03.01_auvStateEstimator/uuvGtsam.py
 			dvl_factor = gtsam.PriorFactorVel(
 				self.poseKey,
 				self.velKey,
