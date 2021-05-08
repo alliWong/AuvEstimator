@@ -34,7 +34,8 @@ class GtsamEstRosNode():
 		self.dr_topic = rospy.get_param('~dr_topic', "/dr/pose") # DR messages
 		self.ekf_topic = rospy.get_param('~ekf_topic', "/est/state") # EKF estimator messages
 		self.imu_topic = rospy.get_param('~imu_topic', "/rexrov2/imu") # IMU messages
-		self.depth_topic = rospy.get_param('~depth_topic', "/bar/depth") # processed barometer to depth messages
+		# self.depth_topic = rospy.get_param('~depth_topic', "/bar/depth") # processed barometer to depth messages
+		self.depth_topic = rospy.get_param('~depth_topic', "/rexrov2/pressure") # processed barometer to depth messages
 		self.dvl_topic = rospy.get_param('~dvl_topic', "/rexrov2/dvl") # DVL messages
 		# DVL parameters
 		self.sen_dvl_offsetX = rospy.get_param("~dvl_offsetX") # offset relative from the sensor to vehicle center of mass in x-direction
@@ -256,7 +257,6 @@ class GtsamEstRosNode():
 				self.error_results['fgo_gt'].append(
 					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 
-
 		self.imu_last_update_time = msg.header.stamp.to_sec()
 
 	def BarCallback(self, msg):
@@ -266,20 +266,23 @@ class GtsamEstRosNode():
 			self.bar_last_update_time = msg.header.stamp.to_sec()
 
 			# sensor measurements
-			self.depth = np.array([msg.pose.pose.position.z])
+			# self.depth = np.array([msg.pose.pose.position.z])
+			self.sen_bar_offsetZ = 0.85
+			self.depth = PressureToDepth(msg.fluid_pressure, self.sen_bar_offsetZ)
 
 			# add measurements to factor graph
-			if self.use_bar and self.use_fgo:
+			if self.use_bar:
 				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, self.depth)
-			if not self.use_bar and self.use_fgo:
+			if not self.use_bar:
 				return
 
-			# data for plots
-			if self.plot_results:
-				self.plot_data['BAR'].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.depth), axis=0))
+			# # data for plots
+			# if self.plot_results:
+			# 	self.plot_data['BAR'].append(
+			# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.depth), axis=0))
 
 	def DvlCallback(self, msg):
+		# print('DVL')
 		""" DVL Callback messages """
 		if (not self.dvl_last_update_time or
 			msg.header.stamp.to_sec() - self.dvl_last_update_time > self.dvl_interval):
@@ -301,9 +304,9 @@ class GtsamEstRosNode():
 			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, self.dvl_offsetTransRbtLinVel).T
 
 			# add measurements to factor graph
-			if self.use_dvl and self.use_fgo:
+			if self.use_dvl:
 				self.gtsam_fusion.AddDvlMeasurement(self.dvl_last_update_time, dvl_enuTransRbtLinVel)
-			if not self.use_dvl and self.use_fgo:
+			if not self.use_dvl:
 				return
 
 			# data for plots

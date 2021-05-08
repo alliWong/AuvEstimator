@@ -4,15 +4,35 @@
 # """
 # GTSAM iSAM2 implementation
 # """
+import sys
+sys.path.append("/usr/local/")
 
 import gtsam
 import heapq
 import time
 import numpy as np
-from commons import *
 from collections import deque
 from gtsam.symbol_shorthand import B, V, X
+from gtsam_auv import PriorFactorPose3Z, PriorFactorVel
 
+def gtsam_pose_to_numpy(gtsam_pose):
+	"""Convert GTSAM pose to numpy arrays (position, orientation)"""
+	position = np.array([gtsam_pose.x(),
+						 gtsam_pose.y(),
+						 gtsam_pose.z()])
+	q = gtsam_pose.rotation().quaternion()
+	orientation = np.array([q[1], q[2], q[3], q[0]]) # xyzw
+	return position, orientation
+
+def numpy_pose_to_gtsam(position, orientation):
+	"""Convert numpy arrays (position, orientation) to GTSAM pose"""
+	return gtsam.Pose3(gtsam.Rot3.Quaternion(orientation[3],
+											 orientation[0],
+											 orientation[1],
+											 orientation[2]),
+								gtsam.Point3(position[0],
+											 position[1],
+											 position[2]))
 
 class GtsamEstimator():
 	""" ISAM2 Fusion"""
@@ -39,8 +59,8 @@ class GtsamEstimator():
 		isam2_params.setRelinearizeThreshold(params['relinearize_th'])
 		isam2_params.setRelinearizeSkip(params['relinearize_skip'])
 		isam2_params.setFactorization(params['factorization'])
-		self.isam2 = gtsam.ISAM2(isam2_params)
-		# self.isam2 = gtsam.ISAM2()
+		# self.isam2 = gtsam.ISAM2(isam2_params)
+		self.isam2 = gtsam.ISAM2()
 		self.new_factors = gtsam.NonlinearFactorGraph()
 		self.new_initial_ests = gtsam.Values()
 		self.min_imu_sample = 2 # minimum imu sample count needed for integration
@@ -166,7 +186,7 @@ class GtsamEstimator():
 		# Add barometer position z factor
 		if meas_type == 'bar':
 			bar_posZ = measurement[2]
-			bar_factor = gtsam.PriorFactorPose3Z(
+			bar_factor = PriorFactorPose3Z(
 				self.poseKey,
 				bar_posZ,
 				self.bar_cov)
@@ -174,19 +194,12 @@ class GtsamEstimator():
 		# Add dvl velocity factor
 		elif meas_type == 'dvl':
 			b_dvl_vel = measurement[2]
-			dvl_factor = gtsam.PriorFactorVel(
+			dvl_factor = PriorFactorVel(
 				self.poseKey,
 				self.velKey,
 				b_dvl_vel,
 				self.dvl_cov)
 			self.new_factors.add(dvl_factor)
-			print('#########################################################')
-			print('*****GTSAM EVAL*****')
-			print('N_PRED_POSE: \n', self.current_global_pose)
-			print('N_PRED_VEL: \n', self.current_global_vel)
-			print('B_MEAS_DVL: \n', b_dvl_vel)
-			print('N_MEAS_DVL: \n', dvl_vel)
-
 		# Optimize measurements
 		self.Optimize(meas_time, imu_samples)
 
@@ -251,7 +264,7 @@ class GtsamEstimator():
 			self.current_time = meas_time
 			self.current_global_pose = result.atPose3(self.poseKey)
 			self.current_global_vel = result.atVector(self.velKey)
-			self.current_bias = result.atimuBias.ConstantBias(self.biasKey)
+			self.current_bias = result.atConstantBias(self.biasKey)
 
 	def Isam2Update(self):
 		"""ISAM2 update and pose estimation"""

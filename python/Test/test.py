@@ -3,10 +3,13 @@
 import numpy as np
 from commons import PressureToDepth
 import gtsam
-import gtsam_example
+import gtsam_example 
+from gtsam_example import PriorFactorPose3Z
 
 g = gtsam_example.Greeting()
 g.sayHello()
+
+# d = gtsam_example.PriorFactorPose3Z
 
 # ################################################################
 # Rot = np.array([[-0.835035, 0.501546, -0.226206],

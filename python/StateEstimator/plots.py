@@ -568,9 +568,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	""" Map XY """
 	plt.figure(figsize=(8, 8))
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 1], sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if (meas_type == "GT" and use_gt):
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 1], sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 1], sample_array[:, 2], 'o', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 1], sample_array[:, 2], 'o', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='DR')
@@ -593,9 +593,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	fig = plt.figure(figsize=(15,15))
 	ax1 = fig.add_subplot(221)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if (meas_type == "GT" and use_gt):
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='DR')
@@ -612,9 +612,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	# Y vs Time
 	fig.add_subplot(222)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if (meas_type == "GT" and use_gt):
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif (meas_type == "DR" and use_dr):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='DR')
@@ -634,9 +634,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	# Z
 	fig.add_subplot(223)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if (meas_type == "GT" and use_gt):
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif meas_type == "BAR" and use_bar:
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
@@ -659,9 +659,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	fig = plt.figure(figsize=(15,15))
 	ax1 = fig.add_subplot(221)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 4], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if meas_type == "GT" and use_gt:
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 4], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == "GT" and use_gt:
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 4], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif meas_type == "IMU":
 			roll_vehicle = 180 * np.arctan2(sample_array[:, 3], np.sqrt(np.power(sample_array[:, 2], 2) + np.power(sample_array[:, 4], 2))) / np.pi
@@ -679,9 +679,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	# Pitch vs Time
 	fig.add_subplot(222)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 5], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if meas_type == "GT" and use_gt:
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 5], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == "GT" and use_gt:
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 5], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif meas_type == "IMU":
 			pitch_vehicle = 180 * np.arctan2(-sample_array[:, 2], np.sqrt(np.power(sample_array[:, 3], 2) + np.power(sample_array[:, 4], 2))) / np.pi
@@ -702,9 +702,9 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	# Yaw vs Time
 	fig.add_subplot(223)
 	for meas_type, sample_array in data_np.items():
-		# if meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 6] + 180.0, '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
-		if meas_type == "GT" and use_gt:
+		if meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 6] + 180.0, '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == "GT" and use_gt:
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 6] + 180.0, '.', markersize=markerSize,  linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
 		elif (meas_type == "EKF" and use_est):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 6] + 180.0, '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'm', label='EKF')
@@ -727,8 +727,8 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	for meas_type, sample_array in data_np.items():
 		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 7], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
-		# elif meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 7], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 7], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
 		elif (meas_type == "DVL" and use_dvl):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 1], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
 		elif (meas_type == "EKF" and use_est):
@@ -748,8 +748,8 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	for meas_type, sample_array in data_np.items():
 		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 8], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
-		# elif meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 8], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 8], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
 		elif (meas_type == "DVL" and use_dvl):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 2], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
 		elif (meas_type == "EKF" and use_est):
@@ -770,8 +770,8 @@ def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use
 	for meas_type, sample_array in data_np.items():
 		if (meas_type == "GT" and use_gt):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 9], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'k', label='GT')
-		# elif meas_type == fusion_items and use_fgo:
-		# 	plt.plot(sample_array[:, 0] - min_time, sample_array[:, 9], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
+		elif meas_type == fusion_items and use_fgo:
+			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 9], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'g', label='FGO')
 		elif (meas_type == "DVL" and use_dvl):
 			plt.plot(sample_array[:, 0] - min_time, sample_array[:, 3], '.', markersize=markerSize, linestyle='-', linewidth=lineWidth, color = 'r', label='measurements')
 		elif (meas_type == "EKF" and use_est):

@@ -1,0 +1,6 @@
+[submodule "auv_estimator"]
+	path = auv_estimator
+	url = https://github.com/alliWong/gtsam_auv.git
+[submodule "gtsam"]
+	path = gtsam
+	url = https://github.com/alliWong/gtsam_auv.git
