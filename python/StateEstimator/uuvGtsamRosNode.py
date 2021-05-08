@@ -282,7 +282,6 @@ class GtsamEstRosNode():
 			# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.depth), axis=0))
 
 	def DvlCallback(self, msg):
-		# print('DVL')
 		""" DVL Callback messages """
 		if (not self.dvl_last_update_time or
 			msg.header.stamp.to_sec() - self.dvl_last_update_time > self.dvl_interval):

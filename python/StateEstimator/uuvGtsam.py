@@ -13,7 +13,7 @@ import time
 import numpy as np
 from collections import deque
 from gtsam.symbol_shorthand import B, V, X
-from gtsam_auv import PriorFactorPose3Z, PriorFactorVel
+import gtsam_auv
 
 def gtsam_pose_to_numpy(gtsam_pose):
 	"""Convert GTSAM pose to numpy arrays (position, orientation)"""
@@ -186,7 +186,7 @@ class GtsamEstimator():
 		# Add barometer position z factor
 		if meas_type == 'bar':
 			bar_posZ = measurement[2]
-			bar_factor = PriorFactorPose3Z(
+			bar_factor = gtsam_auv.PriorFactorPose3Z(
 				self.poseKey,
 				bar_posZ,
 				self.bar_cov)
@@ -194,12 +194,15 @@ class GtsamEstimator():
 		# Add dvl velocity factor
 		elif meas_type == 'dvl':
 			b_dvl_vel = measurement[2]
-			dvl_factor = PriorFactorVel(
+			dvl_factor = gtsam_auv.PriorFactorVel(
 				self.poseKey,
 				self.velKey,
 				b_dvl_vel,
 				self.dvl_cov)
 			self.new_factors.add(dvl_factor)
+			print('#########################################################')
+			print('*****GTSAM EVAL*****')
+			print('B_MEAS_DVL: \n', b_dvl_vel)
 		# Optimize measurements
 		self.Optimize(meas_time, imu_samples)
 
