@@ -5,6 +5,9 @@
 # GTSAM iSAM2 implementation
 # """
 
+import sys
+sys.path.append("/usr/local/cython/")
+
 import gtsam
 import heapq
 import time
@@ -183,7 +186,6 @@ class GtsamEstimator():
 			print('N_PRED_POSE: \n', self.current_global_pose)
 			print('N_PRED_VEL: \n', self.current_global_vel)
 			print('B_MEAS_DVL: \n', b_dvl_vel)
-			print('N_MEAS_DVL: \n', dvl_vel)
 
 		# Optimize measurements
 		self.Optimize(meas_time, imu_samples)
