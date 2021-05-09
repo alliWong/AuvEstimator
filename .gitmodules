@@ -4,3 +4,6 @@
 [submodule "gtsam"]
 	path = gtsam
 	url = https://github.com/alliWong/gtsam_auv.git
+[submodule "gtsam_auv"]
+	path = gtsam_auv
+	url = https://github.com/alliWong/gtsam_auv.git

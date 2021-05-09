@@ -27,6 +27,8 @@ import errorAnalysis
 class GtsamEstRosNode():
 	""" GTSAM ROS Interface """
 	def __init__(self):
+		self.dvl_count = 0
+		self.count = 0
 		rospy.init_node('GtsamEst', anonymous=True) # initialize GTSAM ROS node
 		""" ROS parameters """
 		# Grab topics
@@ -34,7 +36,6 @@ class GtsamEstRosNode():
 		self.dr_topic = rospy.get_param('~dr_topic', "/dr/pose") # DR messages
 		self.ekf_topic = rospy.get_param('~ekf_topic', "/est/state") # EKF estimator messages
 		self.imu_topic = rospy.get_param('~imu_topic', "/rexrov2/imu") # IMU messages
-		# self.depth_topic = rospy.get_param('~depth_topic', "/bar/depth") # processed barometer to depth messages
 		self.depth_topic = rospy.get_param('~depth_topic', "/rexrov2/pressure") # processed barometer to depth messages
 		self.dvl_topic = rospy.get_param('~dvl_topic', "/rexrov2/dvl") # DVL messages
 		# DVL parameters
@@ -122,7 +123,7 @@ class GtsamEstRosNode():
 				self.fusion_items = "DVL + IMU"
 			elif self.use_dvl and self.use_bar:
 				self.fusion_items = "DVL + BAR + IMU"
-			self.plot_data = {'IMU': [], 'GT': [], 'BAR': [], 'DVL': [], 'DR': [], 'EKF': [], self.fusion_items: []}
+			self.plot_data = {self.fusion_items: [], 'IMU': [], 'BAR': [], 'DVL': [], 'GT': [], 'DR': [], 'EKF': []}
 
 		# Error analysis variables
 		if self.compute_error:
@@ -266,20 +267,20 @@ class GtsamEstRosNode():
 			self.bar_last_update_time = msg.header.stamp.to_sec()
 
 			# sensor measurements
-			# self.depth = np.array([msg.pose.pose.position.z])
 			self.sen_bar_offsetZ = 0.85
-			self.depth = PressureToDepth(msg.fluid_pressure, self.sen_bar_offsetZ)
+			depth = PressureToDepth(msg.fluid_pressure, self.sen_bar_offsetZ)
+			pres = msg.fluid_pressure
 
 			# add measurements to factor graph
 			if self.use_bar:
-				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, self.depth)
+				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, np.array([depth]))
 			if not self.use_bar:
 				return
 
-			# # data for plots
-			# if self.plot_results:
-			# 	self.plot_data['BAR'].append(
-			# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.depth), axis=0))
+			# data for plots
+			if self.plot_results:
+				self.plot_data['BAR'].append(
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), np.array([depth])), axis=0))
 
 	def DvlCallback(self, msg):
 		""" DVL Callback messages """

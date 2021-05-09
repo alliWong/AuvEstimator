@@ -58,13 +58,13 @@ def compute_results_error(data, use_fgo, use_gt, use_dr, use_ekf, use_depth):
 	### Z ###
 	for meas_type, sample_array in data_np.items():
 		if (meas_type == "dr" and use_dr):
-			dr_z = (sample_array[:, 0] - min_time, sample_array[:, 3])
+			dr_z = sample_array[:, 3]
 		elif (meas_type == "dr_gt" and use_dr):
-			dr_gt_z = (sample_array[:, 0] - min_time, sample_array[:, 3])
+			dr_gt_z = sample_array[:, 3]
 		elif (meas_type == "ekfEst" and use_ekf):
-			ekf_z = (sample_array[:, 0] - min_time, sample_array[:, 3])
+			ekf_z = sample_array[:, 3]
 		elif (meas_type == "ekf_gt" and use_ekf):
-			est_gt_z = (sample_array[:, 0] - min_time, sample_array[:, 3])
+			est_gt_z = sample_array[:, 3]
 		elif (meas_type == "fgo" and use_fgo):
 			fgo_z = sample_array[:, 3]
 		elif (meas_type == "fgo_gt" and use_fgo):
@@ -211,8 +211,10 @@ def compute_results_error(data, use_fgo, use_gt, use_dr, use_ekf, use_depth):
 		# 1) Calculate FGO distance RMSE
 		errorVecFgoMapX = np.abs(fgo_x - fgo_gt_x)
 		errorVecFgoMapY = np.abs(fgo_y - fgo_gt_y)
+		errorVecFgoMapZ = np.abs(fgo_z - fgo_gt_z)
 		absMeanErrorFgoMapX = np.mean(errorVecFgoMapX)
 		absMeanErrorFgoMapY = np.mean(errorVecFgoMapY)
+		absMeanErrorFgoMapZ = np.mean(errorVecFgoMapZ)
 		absErrorMeanFgoMapXY = np.sqrt(absMeanErrorFgoMapX**2 + absMeanErrorFgoMapY**2)
 		# 2) Calculate FGO std
 		absMeanErrorStdFgoMapX = np.std(errorVecFgoMapX)
@@ -227,10 +229,11 @@ def compute_results_error(data, use_fgo, use_gt, use_dr, use_ekf, use_depth):
 		absMeanErrorFgoYaw = np.mean(errorVecFgoMapYaw)
 		# Print results
 		print('absErrorMeanFgoMapXY', absErrorMeanFgoMapXY)
-		print('absErrorMeanStdEkfMapXY', absErrorMeanStdFgoMapXY)
+		print('absErrorMeanStdFgoMapXY', absErrorMeanStdFgoMapXY)
 		print('absMeanErrorFgoRoll', absMeanErrorFgoRoll)
 		print('absMeanErrorFgoPitch', absMeanErrorFgoPitch)
 		print('absMeanErrorFgoYaw', absMeanErrorFgoYaw)
+		print('absMeanErrorFgoMapZ', absMeanErrorFgoMapZ)
 		# # print Error change
 		# errorChange = ((absErrorMeanDrMapXY-absErrorMeanFgoMapXY)/absErrorMeanDrMapXY)*100
 		# print('DrToFgoMeanErrorChange', errorChange)

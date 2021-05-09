@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 # pylint: disable=invalid-name, E1101
 
 # """
 # GTSAM iSAM2 implementation
 # """
 import sys
-sys.path.append("/usr/local/")
+# sys.path.append("/usr/local/")
 
 import gtsam
 import heapq

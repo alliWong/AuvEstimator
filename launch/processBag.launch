@@ -8,7 +8,7 @@
     <param name="dr_topic" value="/dr/pose" />
     <param name="ekf_topic" value="/est/state" />>
     <param name="imu_topic" value="/rexrov2/imu" />
-    <param name="bar_topic" value="/bar/depth" />
+    <param name="bar_topic" value="/rexrov2/pressure" />
     <param name="dvl_topic" value="/rexrov2/dvl" />
 
     <param name ="dvl_offsetX" value="0.3"/>
@@ -16,16 +16,17 @@
     <param name ="dvl_offsetZ" value="-0.68"/>
 
     <param name="bar_interval" value="0" />
-    <param name="dvl_interval" value="1"/>
+    <param name="dvl_interval" value="0"/>
 
     <param name="use_gt" value="true" />
-    <param name="use_dr" value="true" />
-    <param name="use_ekf" value="true" />
+    <param name="use_dr" value="false" />
+    <param name="use_ekf" value="false" />
     <param name="use_fgo" value="true" />
-    <param name="use_bar" value="true" />
+
+    <param name="use_bar" value="false" />
     <param name="use_dvl" value="true" />
 
-    <param name="compute_error" value="false" />
+    <param name="compute_error" value="true" />
     <param name="plot_results" value="true" />
   </node>
 
