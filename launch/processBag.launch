@@ -3,7 +3,8 @@
   
    <!-- GTSAM fusion combining IMU and 6DOF pose -->
   <node name="GtsamEst" pkg="auv_estimator" type="uuvGtsamRosNode.py" output="screen" required="true">
-    <param name="bag_file_path" value="/home/allison/RosBags/Test2.bag" />
+    <param name="bag_file_path" value="/home/allison/RosBags/100HzImu/Trajectory2.bag" />
+
     <param name="gt_topic" value="/rexrov2/pose_gt" />
     <param name="dr_topic" value="/dr/pose" />
     <param name="ekf_topic" value="/est/state" />>
@@ -23,7 +24,7 @@
     <param name="use_ekf" value="false" />
     <param name="use_fgo" value="true" />
 
-    <param name="use_bar" value="false" />
+    <param name="use_bar" value="true" />
     <param name="use_dvl" value="true" />
 
     <param name="compute_error" value="true" />

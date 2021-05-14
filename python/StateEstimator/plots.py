@@ -327,7 +327,7 @@ def plot_results(data, save_dir, use_gt, use_dr, use_est, use_depth, use_imu):
 	plt.show()
 
 ########################################################################################################################
-def plot_all(data, fusion_items, save_dir, use_gt, use_dr, use_est, use_bar, use_dvl, use_fgo):
+def plot_all(data, fusion_items, save_dir, use_bar, use_dvl, use_fgo, use_gt, use_dr, use_est):
 	"""
 	Plotting isam2, ekf, dr, and ground truth
 	"""

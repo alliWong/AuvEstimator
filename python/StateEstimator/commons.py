@@ -4,7 +4,6 @@
 # """
 import numpy as np
 from numpy import matrix, cos, sin, tan, power, mean, sqrt
-import gtsam
 
 def Rot(phi, theta, psi):
 	""" Convert frame references function

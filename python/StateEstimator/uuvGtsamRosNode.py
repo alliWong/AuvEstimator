@@ -5,52 +5,49 @@
 # ROS Wrapper: GTSAM state estimation
 # """
 
-import sys
 import os
+import numpy as np
+
 import rospy
 import rosbag
-from sensor_msgs.msg import NavSatFix, Imu
-from geometry_msgs.msg import PoseWithCovarianceStamped
-
-import numpy as np
-from numpy import array, zeros, reshape, matmul, eye, sqrt, cos, sin
-import uuvGtsam
-import plots
-from sensor_msgs.msg import FluidPressure
-from uuv_sensor_ros_plugins_msgs.msg import DVL
-from transformations import quaternion_from_euler, euler_from_quaternion
-from commons import PressureToDepth, Rot
-from auv_estimator.msg import State, Covariance, Inputs, Estimator
 from nav_msgs.msg import Odometry
+from uuv_sensor_ros_plugins_msgs.msg import DVL
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from sensor_msgs.msg import NavSatFix, Imu, FluidPressure
+from auv_estimator.msg import State, Covariance, Inputs, Estimator
+
+import plots
+import uuvGtsam
 import errorAnalysis
+import commons as utils
+import transformations as tf
 
 class GtsamEstRosNode():
 	""" GTSAM ROS Interface """
 	def __init__(self):
-		self.dvl_count = 0
-		self.count = 0
-		rospy.init_node('GtsamEst', anonymous=True) # initialize GTSAM ROS node
+		""" ROS Node """
+		rospy.init_node('GtsamEst', anonymous=True)
 		""" ROS parameters """
-		# Grab topics
+		# ROS topics
 		self.gt_topic = rospy.get_param('~gt_topic', "/rexrov2/pose_gt") # GT messages
 		self.dr_topic = rospy.get_param('~dr_topic', "/dr/pose") # DR messages
 		self.ekf_topic = rospy.get_param('~ekf_topic', "/est/state") # EKF estimator messages
 		self.imu_topic = rospy.get_param('~imu_topic', "/rexrov2/imu") # IMU messages
-		self.depth_topic = rospy.get_param('~depth_topic', "/rexrov2/pressure") # processed barometer to depth messages
+		self.bar_topic = rospy.get_param('~bar_topic', "/rexrov2/pressure") # barometer messages
 		self.dvl_topic = rospy.get_param('~dvl_topic', "/rexrov2/dvl") # DVL messages
 		# DVL parameters
-		self.sen_dvl_offsetX = rospy.get_param("~dvl_offsetX") # offset relative from the sensor to vehicle center of mass in x-direction
-		self.sen_dvl_offsetY = rospy.get_param("~dvl_offsetY") # offset relative from the sensor to vehicle center of mass in y-direction
-		self.sen_dvl_offsetZ = rospy.get_param("~dvl_offsetZ") # offset relative from the sensor to vehicle center of mass in z-direction
-		# Grab bag file information
-		self.bag_file_path = rospy.get_param('~bag_file_path', "") # if this path is set, data is read from the bag file via rosbag API as fast as possible
-		self.bar_interval = rospy.get_param('~bar_interval', 0) # set zero to use all available barometer messages
-		self.dvl_interval = rospy.get_param('~dvl_interval', 0) # set zero to use all available DVL messages
-		self.dr_interval = rospy.get_param('~dr_interval', 0) # set zero to use all available dead reckoning messages
-		self.ekf_interval = rospy.get_param('~ekf_interval', 0) # set zero to use all available EKF messages
-		self.bag_secs_to_skip = rospy.get_param('~bag_secs_to_skip', 0.0) # skip "x" seconds in the beginning of bag file [s]
-		self.fixed_dt = rospy.get_param('~fixed_dt', None) # fixed timestep (dt) for IMU samples (set None to use real time IMU timesteps)
-		# Decide which sensors will be used for sensor fusion
+		self.sen_dvl_offsetX = rospy.get_param("~dvl_offsetX") # offset relative from the DVL to vehicle center of mass in x-direction
+		self.sen_dvl_offsetY = rospy.get_param("~dvl_offsetY") # offset relative from the DVL to vehicle center of mass in y-direction
+		self.sen_dvl_offsetZ = rospy.get_param("~dvl_offsetZ") # offset relative from the DVL to vehicle center of mass in z-direction
+		# Rosbag file information
+		self.bag_file_path = rospy.get_param('~bag_file_path', "") # set file path to read data from rosbag
+		self.bar_interval = rospy.get_param('~barj_interval', 0) # set 0 to use all available barometer messages
+		self.dvl_interval = rospy.get_param('~dvl_interval', 0) # set 0 to use all available DVL messages
+		self.dr_interval = rospy.get_param('~dr_interval', 0) # set 0 to use all available dead reckoning messages
+		self.ekf_interval = rospy.get_param('~ekf_interval', 0) # set 0 to use all available EKF messages
+		self.bag_secs_to_skip = rospy.get_param('~bag_secs_to_skip', 0.0) # skip "x" seconds in the beginning of rosbag file [s]
+		self.fixed_dt = rospy.get_param('~fixed_dt', None) # set "dt" for fixed IMU timesteps, set "None" for real-time IMU timesteps.
+		# Set sensors to be used for sensor fusion
 		self.use_dvl = rospy.get_param('~use_dvl', False) # enable/disable the use of DVL messages
 		self.use_bar = rospy.get_param('~use_bar', False) # enable/disable the use of barometer messages
 		self.use_gt = rospy.get_param('~use_gt', False) # enable/disable the use of GT messages
@@ -58,19 +55,27 @@ class GtsamEstRosNode():
 		self.use_ekf = rospy.get_param('~use_ekf', False) # enable/disable the use of EKF estimator messages
 		self.use_fgo = rospy.get_param('~use_fgo', False) # enable/disable the use of FGO estimator messages
 		# Plot information
-		self.plot_results = rospy.get_param('~plot_results', False) # plot data after processing the bag file
-		self.save_dir = rospy.get_param('~save_dir', '/tmp') # save resulting images in a directory
-		# Error analysis
-		self.compute_error = rospy.get_param('~compute_error', False) # perform error analysis after processing the bag file
+		self.plot_results = rospy.get_param('~plot_results', False) # enable/disable ploting data
+		self.save_dir = rospy.get_param('~save_dir', '/tmp') # save plot images in file directory
+		# Error analysis information
+		self.compute_error = rospy.get_param('~compute_error', False) # enable/disable error analysis
 		# Publishers
 		self.gtsam_pub = rospy.Publisher("gtsam/pose", PoseWithCovarianceStamped, queue_size=10)
 
-		""" IMU Preintegration Parameters """
-		params = {}
-		# Minimum IMU sample count to accept as measurements for optimization
-		params['opt_meas_buffer_time'] = rospy.get_param('~opt_meas_buffer_time', 0.3) # measurement optimization buffer size [s]
+		""" Sensor variables """
+		# DVL rigid frame transformation wrt IMU in ENU configuration(x-forward, z-upwards)
+		self.sen_dvl_enuFrameRoll = np.deg2rad(0)
+		self.sen_dvl_enuFramePitch = np.deg2rad(0) # -90
+		self.sen_dvl_enuFrameYaw = np.deg2rad(0)
+		self.frameTrans = utils.Rot(self.sen_dvl_enuFrameRoll, self.sen_dvl_enuFramePitch, self.sen_dvl_enuFrameYaw) # compute for the corresponding rotation matrix
+		self.dvl_offsetTransRbtLinVel = np.zeros(shape=(3,3)) # dvl frame transformation considering dvl linear position offset wrt IMU
+
+		""" GTSAM Parameters """
+		params = {} # instantiate parameters
+		# Minimum IMU sample count to be accepted as measurements for optimization
+		params['opt_meas_buffer_time'] = rospy.get_param('~opt_meas_buffer_time', 0.0) # measurement optimization buffer size [s]
 		# Optimization parameters
-		params['relinearize_th'] = rospy.get_param('~relinearize_th', 0.01)
+		params['relinearize_th'] = rospy.get_param('~relinearize_th', 0.1)
 		params['relinearize_skip'] = rospy.get_param('~relinearize_skip', 10)
 		params['factorization'] = rospy.get_param('~relinearize_skip', 'CHOLESKY')
 		# IMU preintegration parameters
@@ -80,41 +85,39 @@ class GtsamEstRosNode():
 		params['int_cov_sigma'] = rospy.get_param('~int_cov_sigma', 0) # associated error when integrating velocities for position
 		params['setUse2ndOrderCoriolis'] = rospy.get_param('~setUse2ndOrderCoriolis', False) # set 2nd order Coriolis
 		params['omega_coriolis'] = rospy.get_param('~omega_coriolis', [0, 0, 0]) # set omega Coriolis
-		# initial vehicle state
+		# Initial vehicle state
 		params['init_pos'] = rospy.get_param('~init_pos', [0, 0, -25]) # vehicle initial linear position [m]
 		params['init_ori'] = rospy.get_param('~init_ori', [0, 0, 0, 1]) # vehicle initial angular position [quaternion]
 		params['init_vel'] = rospy.get_param('~init_vel', [0, 0, 0]) # vehicle initial velocity [m/s]
 		params['init_acc_bias'] = rospy.get_param('~init_acc_bias', [0, 0, 0]) # vehicle initial acceleration bias [m/s^2]
 		params['init_gyr_bias'] = rospy.get_param('~init_gyr_bias', [0, 0, 0]) # vehicle initial gyroscope bias [degrees/s]
-		# uncertainty of the initial vehicle state
+		# Initial vehicle state uncertainty
 		params['init_pos_cov'] = rospy.get_param('~init_pos_cov', 10) # initial vehicle initial linear position covariance [m]
 		params['init_ori_cov'] = rospy.get_param('~init_ori_cov', 10) # initial vehicle initial angular position covariance [quaternion]
 		params['init_vel_cov'] = rospy.get_param('~init_vel_cov', 10) # initial vehicle initial linear velocity covariance [m/s]
 		params['init_acc_bias_cov'] = rospy.get_param('~init_acc_bias_cov', 1.0) # initial vehicle initial acceleration bias covariance [m/s^2]
-		params['init_gyr_bias_cov'] = rospy.get_param('~init_gyr_bias_cov', 0.1) # initial vehicle initial gyroscope bias covariance [degrees/s]
-		# measurement noise
-		params['dvl_cov'] = rospy.get_param('~dvl_cov', [0.001, 0.001, 0.001]) # dvl sensor measurement covariance [m/s]
+		params['init_gyr_bias_cov'] = rospy.get_param('~init_gyr_bias_cov', 1.0) # initial vehicle initial gyroscope bias covariance [degrees/s]
+		# Sensor measurement uncertainty
+		params['dvl_cov'] = rospy.get_param('~dvl_cov', [0.001, 0.001, 1e5000000]) # dvl sensor measurement covariance [m/s]
 		params['bar_cov'] = rospy.get_param('~bar_cov', [0.2]) # barometer sensor measurement covariance [m]
 		params['sigma_acc_bias_evol'] = rospy.get_param('~sigma_acc_bias_evol', [0.0004, 0.0004, 0.0004]) # linear acceleration sensor measurement covariance [m/s^2]
 		params['sigma_gyr_bias_evol'] = rospy.get_param('~sigma_gyr_bias_evol', [0.0025, 0.0025, 0.0025]) # angular velocity sensor measurement covariance [degrees/s]
 
 		""" Variables """
-		# time variables
-		self.is_initialized = False # enable/disable GTSAM fusion
-		self.imu_last_update_time = None # enable/disable GTSAM fusion
-		self.bar_last_update_time = None # IMU time since last update
+		# Time variables
+		self.imu_last_update_time = None # IMU time since last update
+		self.bar_last_update_time = None # barometer time since last update
 		self.dvl_last_update_time = None # DVL time since last update
 		self.dr_last_update_time = None # DR time since last update
 		self.ekf_last_update_time = None # EKF time since last update
-		# pose variables
+		# Pose variables
 		self.last_rbt_pose = None # last robot pose in map frame
 		self.fgo_pose = None # FGO pose message
 		self.gt_pose = None # GT pose message
 		self.ekf_pose = None # EKF pose message
 		self.dr_pose = None # DR pose message
-		self.fgo_pose = None # FGO pose message
 
-		""" Analysis/Processing variables """
+		""" Post-Process Variables """
 		# Plotting variables
 		if self.plot_results:
 			if self.use_bar:
@@ -124,19 +127,9 @@ class GtsamEstRosNode():
 			elif self.use_dvl and self.use_bar:
 				self.fusion_items = "DVL + BAR + IMU"
 			self.plot_data = {self.fusion_items: [], 'IMU': [], 'BAR': [], 'DVL': [], 'GT': [], 'DR': [], 'EKF': []}
-
 		# Error analysis variables
 		if self.compute_error:
 			self.error_results = {'dr': [], 'dr_gt': [], 'dr_bar': [], 'ekfEst': [], 'ekf_gt': [], 'ekf_bar': [], 'fgo': [], 'fgo_gt': []}
-
-		""" Sensor variables """
-		# DVL rigid frame transformation wrt IMU
-		# DVL frame in ENU configuration(x-forward, z-upwards)
-		self.sen_dvl_enuFrameRoll = np.deg2rad(0)
-		self.sen_dvl_enuFramePitch = np.deg2rad(0) # -90
-		self.sen_dvl_enuFrameYaw = np.deg2rad(0)
-		self.frameTrans = Rot(self.sen_dvl_enuFrameRoll, self.sen_dvl_enuFramePitch, self.sen_dvl_enuFrameYaw) # compute for the corresponding rotation matrix
-		self.dvl_offsetTransRbtLinVel = np.zeros(shape=(3,3)) # dvl frame transformation considering dvl linear position offset wrt IMU
 
 		""" GTSAM ROS Wrapper """
 		self.gtsam_fusion = uuvGtsam.GtsamEstimator(params) # initialize GTSAM fusion
@@ -145,38 +138,38 @@ class GtsamEstRosNode():
 	def RunGtsam(self):
 		""" Run GTSAM """
 		# Run GTSAM using rosbag
-		if self.bag_file_path: # initialize rosbag path if there is user input value
+		if self.bag_file_path: # initialize rosbag path if there is user input path value
 			rospy.loginfo("Processing file using rosbag: {}. Please wait..".format(self.bag_file_path))
 			if self.bag_secs_to_skip > 0: # skips "x" seconds in the beginning of bag file if there is user input value
 				rospy.loginfo("Skipping {} seconds from the start of rosbag.".format(self.bag_secs_to_skip))
 			bag = rosbag.Bag(self.bag_file_path) # set rosbag variable
 			total_time_secs = int(bag.get_end_time() - bag.get_start_time()) # compute total time of rosbag [s]
-			init_t = None # set intial time
-			last_info_time_secs = int(bag.get_start_time()) # update last time
-			for topic, msg, t in bag.read_messages(topics=[self.gt_topic, self.dr_topic, self.ekf_topic, self.imu_topic, self.depth_topic, self.dvl_topic]):
-				if not init_t:
-					init_t = t
+			init_time = None # set intial time
+			last_info_time_secs = int(bag.get_start_time()) # last time
+			for topic, msg, time in bag.read_messages(topics=[self.imu_topic, self.bar_topic, self.dvl_topic, self.gt_topic, self.dr_topic, self.ekf_topic]):
+				if not init_time:
+					init_time = time
 					continue
-				if (t - init_t).to_sec() < self.bag_secs_to_skip:
+				if (time - init_time).to_sec() < self.bag_secs_to_skip:
 					continue
 				if rospy.is_shutdown():
 					break
-				elapsed_time_secs = int(t.to_sec() - bag.get_start_time())
+				elapsed_time_secs = int(time.to_sec() - bag.get_start_time())
 				if elapsed_time_secs % 100 == 0 and elapsed_time_secs != last_info_time_secs:
 					last_info_time_secs = elapsed_time_secs
 					rospy.loginfo("Elapsed time: {}/{} [s]".format(elapsed_time_secs, total_time_secs))
 				if topic == self.imu_topic:
 					self.ImuCallback(msg)
+				elif topic == self.bar_topic:
+					self.BarCallback(msg)
+				elif topic == self.dvl_topic:
+					self.DvlCallback(msg)
 				elif topic == self.gt_topic:
 					self.GtCallback(msg)
 				elif topic == self.dr_topic:
 					self.DrCallback(msg)
 				elif topic == self.ekf_topic:
 					self.EkfCallback(msg)
-				elif topic == self.depth_topic:
-					self.BarCallback(msg)
-				elif topic == self.dvl_topic:
-					self.DvlCallback(msg)
 			bag.close() # close bag file
 			rospy.loginfo("Bag processed.")
 			if self.compute_error: # compute error if initialized
@@ -186,56 +179,56 @@ class GtsamEstRosNode():
 				rospy.loginfo("Preparing plots. Please wait..")
 				if not os.path.exists(self.save_dir):
 					os.makedirs(self.save_dir)
-				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_gt, self.use_dr, self.use_ekf, self.use_bar, self.use_dvl, self.use_fgo)
-		# Run GTSAM using ROS subscribers (real time)
+				plots.plot_all(self.plot_data, self.fusion_items, self.save_dir, self.use_bar, self.use_dvl, self.use_fgo, self.use_gt, self.use_dr, self.use_ekf)
+		# Run GTSAM using ROS subscribers (real-time)
 		else:
 			# Subscribers
 			self.sub_dvl = rospy.Subscriber(self.dvl_topic, DVL, self.DvlCallback) # DVL
 			self.sub_imu = rospy.Subscriber(self.imu_topic, Imu, self.ImuCallback) # IMU
-			self.sub_depth = rospy.Subscriber(self.depth_topic, Odometry, self.BarCallback) # depth
+			self.sub_depth = rospy.Subscriber(self.bar_topic, FluidPressure, self.BarCallback) # depth
 			rospy.spin()
 
 	def ImuCallback(self, msg):
 		""" IMU Callback messages """
 		if self.imu_last_update_time:
-
 			# Note: Raw imu angular position measurements is computed solely for the purpose of graphing
 			# 		raw dvl sensor measurements in navigation frame. Angular position is not being
 			# 		used in the factor graph.
-			#		Input IMU data is in rotation matrix form.
-			euler = euler_from_quaternion([msg.orientation.x,
-										msg.orientation.y,
-										msg.orientation.z,
-										msg.orientation.w]) # Convert IMU data from quarternion to euler
+			#		Input IMU orientation is in rotation matrix form.
+			euler = tf.euler_from_quaternion([
+				msg.orientation.x,
+				msg.orientation.y,
+				msg.orientation.z,
+				msg.orientation.w]) # Convert IMU data from quarternion to euler
 			unwrapEuler = np.unwrap(euler) # unwrap euler angles
-			imu_mapEulAng = np.array([[unwrapEuler[0]],
-									[unwrapEuler[1]],
-									[unwrapEuler[2]]]) # imu angular position array
-			self.imu_mapAngPos = Rot(imu_mapEulAng[0], imu_mapEulAng[1], imu_mapEulAng[2])
+			imu_mapEulAng = np.array([
+				[unwrapEuler[0]],
+				[unwrapEuler[1]],
+				[unwrapEuler[2]]]) # imu angular position array
+			self.imu_mapAngPos = utils.Rot(imu_mapEulAng[0], imu_mapEulAng[1], imu_mapEulAng[2])
 
 			# Sensor measurements
 			self.lin_acc = np.array([
 				msg.linear_acceleration.x,
 				msg.linear_acceleration.y,
-				msg.linear_acceleration.z
-			])
+				msg.linear_acceleration.z]) # linear acceleration
 			self.ang_vel = np.array([
 				msg.angular_velocity.x,
 				msg.angular_velocity.y,
-				msg.angular_velocity.z
-			])
-			dt = msg.header.stamp.to_sec() - self.imu_last_update_time
+				msg.angular_velocity.z]) # angular velocity
+			dt = msg.header.stamp.to_sec() - self.imu_last_update_time # time since last IMU update
 			if self.fixed_dt:
 				dt = self.fixed_dt
-			# add measurements to factor graph
+			
+			# Add measurements to factor graph
 			imu_pos, imu_ori, vel, acc_bias, gyr_bias = self.gtsam_fusion.AddImuMeasurement(
 				msg.header.stamp.to_sec(), self.lin_acc, self.ang_vel, dt)
 			# convert pose from IMU frame to robot frame
 			rbt_pos = imu_pos
 			rbt_ori = imu_ori
-			# store internally
-			euler_imu_ori = np.asarray(euler_from_quaternion(imu_ori)) / np.pi * 180.
 			self.last_rbt_pose = (rbt_pos, rbt_ori)
+			# store internally
+			euler_imu_ori = np.asarray(tf.euler_from_quaternion(imu_ori)) / np.pi * 180.0
 			self.fgo_pose = np.concatenate((imu_pos, euler_imu_ori, vel), axis=0)
 			# publish pose
 			self.PublishPose(msg.header.stamp, rbt_pos, rbt_ori)
@@ -247,16 +240,7 @@ class GtsamEstRosNode():
 					np.concatenate((np.array([msg.header.stamp.to_sec(), dt]), self.lin_acc, self.ang_vel), axis=0))
 				# store output
 				self.plot_data[self.fusion_items].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), imu_pos, euler_imu_ori, vel, acc_bias, gyr_bias), axis=0))
-
-			# data for error analysis
-			if self.compute_error:
-				# grab estimator pose
-				self.error_results['fgo'].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
-				# grab estimator pose when ground truth is updated
-				self.error_results['fgo_gt'].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+                    np.concatenate((np.array([msg.header.stamp.to_sec()]), imu_pos, euler_imu_ori, vel, acc_bias, gyr_bias), axis=0))
 
 		self.imu_last_update_time = msg.header.stamp.to_sec()
 
@@ -268,19 +252,22 @@ class GtsamEstRosNode():
 
 			# sensor measurements
 			self.sen_bar_offsetZ = 0.85
-			depth = PressureToDepth(msg.fluid_pressure, self.sen_bar_offsetZ)
-			pres = msg.fluid_pressure
+			depth = utils.PressureToDepth(msg.fluid_pressure, self.sen_bar_offsetZ)
+			depth = np.array([depth])
+
+			if not self.last_rbt_pose:
+				return
 
 			# add measurements to factor graph
 			if self.use_bar:
-				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, np.array([depth]))
+				self.gtsam_fusion.AddBarMeasurement(self.bar_last_update_time, depth)
 			if not self.use_bar:
 				return
 
 			# data for plots
 			if self.plot_results:
 				self.plot_data['BAR'].append(
-					np.concatenate((np.array([msg.header.stamp.to_sec()]), np.array([depth])), axis=0))
+					np.concatenate((np.array([msg.header.stamp.to_sec()]), depth), axis=0))
 
 	def DvlCallback(self, msg):
 		""" DVL Callback messages """
@@ -289,19 +276,24 @@ class GtsamEstRosNode():
 			self.dvl_last_update_time = msg.header.stamp.to_sec()
 
 			# sensor measurements
-			dvl_vel = np.array([msg.velocity.x,
-								msg.velocity.y,
-								msg.velocity.z])
+			dvl_vel = np.array([
+				msg.velocity.x,
+				msg.velocity.y,
+				msg.velocity.z])
 			# dvl offset array
-			dvl_offset = array([self.sen_dvl_offsetX,
-								self.sen_dvl_offsetY,
-								self.sen_dvl_offsetZ])
+			dvl_offset = np.array([
+				self.sen_dvl_offsetX,
+				self.sen_dvl_offsetY,
+				self.sen_dvl_offsetZ])
 			# static frame transformation of DVL wrt IMU
 			dvl_enuTransRbtLinVel = np.matmul(self.frameTrans, dvl_vel.T)
 			# frame transformation considering dvl linear position offset wrt IMU
 			self.dvl_offsetTransRbtLinVel = dvl_enuTransRbtLinVel - np.cross(self.ang_vel.T, dvl_offset).T
 			# Convert velocity from robot frame into navigation frame (used for plotting purposes only)
 			self.sen_dvl_mapLinVel = np.matmul(self.imu_mapAngPos, self.dvl_offsetTransRbtLinVel).T
+
+			if not self.last_rbt_pose:
+				return
 
 			# add measurements to factor graph
 			if self.use_dvl:
@@ -318,19 +310,20 @@ class GtsamEstRosNode():
 		""" GT Callback messages """
 		# Change incoming ground truth quarternion data into euler [rad]
 		gt_quaternion = (msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
-		gt_euler = euler_from_quaternion(gt_quaternion)
+		gt_euler = tf.euler_from_quaternion(gt_quaternion)
 		unwrapEuler = np.unwrap(gt_euler)
 
 		# data
-		self.gt_pose = np.array([msg.pose.pose.position.x,
-							msg.pose.pose.position.y,
-							msg.pose.pose.position.z,
-							np.rad2deg(unwrapEuler[0]),
-							np.rad2deg(unwrapEuler[1]),
-							np.rad2deg(unwrapEuler[2]),
-							msg.twist.twist.linear.x,
-							msg.twist.twist.linear.y,
-							msg.twist.twist.linear.z])
+		self.gt_pose = np.array([
+			msg.pose.pose.position.x,
+			msg.pose.pose.position.y,
+			msg.pose.pose.position.z,
+			np.rad2deg(unwrapEuler[0]),
+			np.rad2deg(unwrapEuler[1]),
+			np.rad2deg(unwrapEuler[2]),
+			msg.twist.twist.linear.x,
+			msg.twist.twist.linear.y,
+			msg.twist.twist.linear.z])
 
 		# data for plots
 		if self.plot_results:
@@ -339,14 +332,14 @@ class GtsamEstRosNode():
 		if not self.use_gt:
 			return
 
-		# # data for error analysis
-		# if self.compute_error:
-		# 	# grab estimator pose
-		# 	self.error_results['fgo'].append(
-		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
-		# 	# grab estimator pose when ground truth is updated
-		# 	self.error_results['fgo_gt'].append(
-		# 		np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
+		# data for error analysis
+		if self.compute_error:
+			# grab dead reckoning pose
+			self.error_results['fgo'].append(
+				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.fgo_pose), axis=0))
+			# grab ground truth pose when dead reckoning is updated
+			self.error_results['fgo_gt'].append(
+				np.concatenate((np.array([msg.header.stamp.to_sec()]), self.gt_pose), axis=0))
 
 	def DrCallback(self, msg):
 		""" DR Callback messages """
@@ -355,15 +348,16 @@ class GtsamEstRosNode():
 			self.dr_last_update_time = msg.header.stamp.to_sec()
 
 			# data
-			self.dr_pose = np.array([msg.state.x,
-								msg.state.y,
-								self.depth,
-								msg.state.roll,
-								msg.state.pitch,
-								msg.state.yaw,
-								msg.state.vx,
-								msg.state.vy,
-								msg.state.vz]) # dead reckoning array
+			self.dr_pose = np.array([
+				msg.state.x,
+				msg.state.y,
+				self.depth,
+				msg.state.roll,
+				msg.state.pitch,
+				msg.state.yaw,
+				msg.state.vx,
+				msg.state.vy,
+				msg.state.vz]) # dead reckoning array
 
 			# data for plots
 			if self.plot_results:
@@ -386,15 +380,16 @@ class GtsamEstRosNode():
 			self.ekf_last_update_time = msg.header.stamp.to_sec()
 
 			# data
-			self.ekf_pose = np.array([msg.state.x,
-								msg.state.y,
-								msg.state.z,
-								msg.state.roll,
-								msg.state.pitch,
-								msg.state.yaw,
-								msg.state.vx,
-								msg.state.vy,
-								msg.state.vz]) # EKF array
+			self.ekf_pose = np.array([
+				msg.state.x,
+				msg.state.y,
+				msg.state.z,
+				msg.state.roll,
+				msg.state.pitch,
+				msg.state.yaw,
+				msg.state.vx,
+				msg.state.vy,
+				msg.state.vz]) # EKF array
 
 			# data for plots
 			if self.plot_results:
